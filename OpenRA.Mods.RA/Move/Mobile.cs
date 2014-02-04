@@ -543,9 +543,12 @@ namespace OpenRA.Mods.RA.Move
 		public Activity MoveFollow(Actor self, Target target, WRange range) { return new Follow(self, target, range); }
 		public Activity MoveTo(Func<List<CPos>> pathFunc) { return new Move(pathFunc); }
 
+		// 'self' is the unit that is being asked to move
+		// 'blocking' is the unit that self is blocking
 		public void OnNotifyBlockingMove(Actor self, Actor blocking)
 		{
-			Nudge(self, blocking, true);
+			if (self.IsIdle && (self.Owner == blocking.Owner || self.AppearsFriendlyTo(blocking)))
+				Nudge(self, blocking, true);
 		}
     }
 }
