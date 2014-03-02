@@ -10,7 +10,6 @@
 
 using System.Collections.Generic;
 using OpenRA.FileFormats;
-using OpenRA.Widgets;
 
 namespace OpenRA.Mods.RA
 {
@@ -30,8 +29,6 @@ namespace OpenRA.Mods.RA
 
 		public void StartGame()
 		{
-			Ui.ResetAll();
-			Game.modData.WidgetLoader.LoadWidget( new WidgetArgs(), Ui.Root, "INIT_SETUP" );
 		}
 	}
 }

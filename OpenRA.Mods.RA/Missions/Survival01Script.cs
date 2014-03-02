@@ -17,7 +17,6 @@ using OpenRA.Mods.RA.Activities;
 using OpenRA.Mods.RA.Buildings;
 using OpenRA.Mods.RA.Move;
 using OpenRA.Traits;
-using OpenRA.Widgets;
 
 namespace OpenRA.Mods.RA.Missions
 {
@@ -69,7 +68,7 @@ namespace OpenRA.Mods.RA.Missions
 		World world;
 
 		CountdownTimer survivalTimer;
-		CountdownTimerWidget survivalTimerWidget;
+		//CountdownTimerWidget survivalTimerWidget;
 
 		int attackAtFrame;
 		int attackAtFrameIncrement;
@@ -245,8 +244,8 @@ namespace OpenRA.Mods.RA.Missions
 		{
 			Sound.Play("timergo1.aud");
 			survivalTimer = new CountdownTimer(timerTicks, CountDownTimerExpired, true);
-			survivalTimerWidget = new CountdownTimerWidget(survivalTimer, "Survive: {0}");
-			Ui.Root.AddChild(survivalTimerWidget);
+			//survivalTimerWidget = new CountdownTimerWidget(survivalTimer, "Survive: {0}");
+			//Ui.Root.AddChild(survivalTimerWidget);
 		}
 
 		void SendReinforcements()
@@ -265,7 +264,7 @@ namespace OpenRA.Mods.RA.Missions
 
 		void CountDownTimerExpired(CountdownTimer countDownTimer)
 		{
-			survivalTimerWidget.Visible = false;
+			//survivalTimerWidget.Visible = false;
 			SendReinforcements();
 			maintainPresence.Status = ObjectiveStatus.Completed;
 			destroySoviets.Status = ObjectiveStatus.InProgress;

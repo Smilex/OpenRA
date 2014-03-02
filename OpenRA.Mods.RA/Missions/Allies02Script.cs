@@ -19,7 +19,6 @@ using OpenRA.Mods.RA.Buildings;
 using OpenRA.Mods.RA.Effects;
 using OpenRA.Mods.RA.Move;
 using OpenRA.Traits;
-using OpenRA.Widgets;
 
 namespace OpenRA.Mods.RA.Missions
 {
@@ -87,7 +86,7 @@ namespace OpenRA.Mods.RA.Missions
 		Actor sovietWarFactory;
 
 		CountdownTimer reinforcementsTimer;
-		CountdownTimerWidget reinforcementsTimerWidget;
+		//CountdownTimerWidget reinforcementsTimerWidget;
 
 		CPos alliedBaseTopLeft;
 		CPos alliedBaseBottomRight;
@@ -130,8 +129,8 @@ namespace OpenRA.Mods.RA.Missions
 		void MissionFailed(string text)
 		{
 			MissionUtils.CoopMissionFailed(world, text, allies1, allies2);
-			if (reinforcementsTimer != null)
-				reinforcementsTimerWidget.Visible = false;
+			//if (reinforcementsTimer != null)
+			//	reinforcementsTimerWidget.Visible = false;
 		}
 
 		void MissionAccomplished(string text)
@@ -349,13 +348,13 @@ namespace OpenRA.Mods.RA.Missions
 		{
 			Sound.Play("timergo1.aud");
 			reinforcementsTimer = new CountdownTimer(ReinforcementsTicks, ReinforcementsTimerExpired, true);
-			reinforcementsTimerWidget = new CountdownTimerWidget(reinforcementsTimer, "Allied reinforcements arrive in: {0}");
-			Ui.Root.AddChild(reinforcementsTimerWidget);
+			//reinforcementsTimerWidget = new CountdownTimerWidget(reinforcementsTimer, "Allied reinforcements arrive in: {0}");
+			//Ui.Root.AddChild(reinforcementsTimerWidget);
 		}
 
 		void ReinforcementsTimerExpired(CountdownTimer countdownTimer)
 		{
-			reinforcementsTimerWidget.Visible = false;
+			//reinforcementsTimerWidget.Visible = false;
 			currentReinforcement++;
 			Sound.Play("aarrivs1.aud");
 		}

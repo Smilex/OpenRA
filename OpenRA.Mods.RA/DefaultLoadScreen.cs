@@ -15,7 +15,6 @@ using System.Linq;
 using OpenRA.FileFormats;
 using OpenRA.Graphics;
 using OpenRA.Support;
-using OpenRA.Widgets;
 
 namespace OpenRA.Mods.RA
 {
@@ -65,7 +64,7 @@ namespace OpenRA.Mods.RA
 			var textSize = r.Fonts["Bold"].Measure(text);
 
 			r.BeginFrame(float2.Zero, 1f);
-			WidgetUtils.FillRectWithSprite(stripeRect, stripe);
+			//WidgetUtils.FillRectWithSprite(stripeRect, stripe);
 			r.RgbaSpriteRenderer.DrawSprite(logo, logoPos);
 			r.Fonts["Bold"].DrawText(text, new float2(r.Resolution.Width - textSize.X - 20, r.Resolution.Height - textSize.Y - 20), Color.White);
 			r.EndFrame(new NullInputHandler());
@@ -78,15 +77,15 @@ namespace OpenRA.Mods.RA
 
 		void TestAndContinue()
 		{
-			Ui.ResetAll();
+			//Ui.ResetAll();
 			if (!info["TestFiles"].Split(',').All(f => FileSystem.Exists(f.Trim())))
 			{
-				var args = new WidgetArgs()
+				/*var args = new WidgetArgs()
 				{
 					{ "continueLoading", () => TestAndContinue() },
 					{ "installData", info }
 				};
-				Ui.OpenWindow(info["InstallerMenuWidget"], args);
+				Ui.OpenWindow(info["InstallerMenuWidget"], args);*/
 			}
 			else
 				Game.LoadShellMap();

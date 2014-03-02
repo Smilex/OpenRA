@@ -10,8 +10,6 @@
 
 using System.Linq;
 using OpenRA.Traits;
-using OpenRA.Widgets;
-using OpenRA.Mods.RA.Widgets;
 
 namespace OpenRA.Mods.RA
 {
@@ -31,17 +29,12 @@ namespace OpenRA.Mods.RA
 
 		public void SelectionChanged()
 		{
-			var palette = Ui.Root.GetOrNull<BuildPaletteWidget>("INGAME_BUILD_PALETTE");
-			if (palette == null)
-				return;
-
 			// Queue-per-structure
 			var perqueue = world.Selection.Actors.FirstOrDefault(
 				a => a.IsInWorld && a.World.LocalPlayer == a.Owner && a.HasTrait<ProductionQueue>());
 
 			if (perqueue != null)
 			{
-				palette.SetCurrentTab(perqueue.TraitsImplementing<ProductionQueue>().First());
 				return;
 			}
 
@@ -53,9 +46,6 @@ namespace OpenRA.Mods.RA
 
 			if (types.Length == 0)
 				return;
-
-			palette.SetCurrentTab(world.LocalPlayer.PlayerActor.TraitsImplementing<ProductionQueue>()
-				.FirstOrDefault(t => types.Contains(t.Info.Type)));
 		}
 	}
 }

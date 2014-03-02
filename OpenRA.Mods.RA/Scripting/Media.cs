@@ -10,7 +10,6 @@
 
 using System;
 using System.IO;
-using OpenRA.Widgets;
 
 namespace OpenRA.Scripting
 {
@@ -18,16 +17,16 @@ namespace OpenRA.Scripting
 	{
 		public static void PlayFMVFullscreen(World w, string movie, Action onComplete)
 		{
-			var playerRoot = Game.OpenWindow(w, "FMVPLAYER");
-			var player = playerRoot.Get<VqaPlayerWidget>("PLAYER");
+			//var playerRoot = Game.OpenWindow(w, "FMVPLAYER");
+			//var player = playerRoot.Get<VqaPlayerWidget>("PLAYER");
 
 			try
 			{
-				player.Load(movie);
+				//player.Load(movie);
 			}
 			catch (FileNotFoundException)
 			{
-				Ui.CloseWindow();
+				//Ui.CloseWindow();
 				onComplete();
 				return;
 			}
@@ -44,7 +43,7 @@ namespace OpenRA.Scripting
 			if (music)
 				Sound.PauseMusic();
 
-			player.PlayThen(() =>
+			/*player.PlayThen(() =>
 			{
 				if (music)
 					Sound.PlayMusic();
@@ -53,7 +52,7 @@ namespace OpenRA.Scripting
 				Sound.SoundVolumeModifier = oldModifier;
 				w.SetPauseState(false);
 				onComplete();
-			});
+			});*/
 		}
 	}
 }

@@ -12,7 +12,6 @@ using System.Linq;
 using OpenRA.FileFormats;
 using OpenRA.Mods.RA;
 using OpenRA.Traits;
-using OpenRA.Widgets;
 
 namespace OpenRA.Mods.Cnc.Widgets
 {
@@ -26,14 +25,14 @@ namespace OpenRA.Mods.Cnc.Widgets
 	class ProductionQueueFromSelection : INotifySelection
 	{
 		readonly World world;
-		Lazy<ProductionTabsWidget> tabsWidget;
+		//Lazy<ProductionTabsWidget> tabsWidget;
 
 		public ProductionQueueFromSelection(World world, ProductionQueueFromSelectionInfo info)
 		{
 			this.world = world;
 
-			tabsWidget = Lazy.New(() =>
-				Ui.Root.Get<ProductionTabsWidget>(info.ProductionTabsWidget));
+			/*tabsWidget = Lazy.New(() =>
+				Ui.Root.Get<ProductionTabsWidget>(info.ProductionTabsWidget));*/
 		}
 
 		public void SelectionChanged()
@@ -43,8 +42,8 @@ namespace OpenRA.Mods.Cnc.Widgets
 				&& a.World.LocalPlayer == a.Owner
 				&& a.HasTrait<ProductionQueue>());
 
-			if (producer != null)
-				tabsWidget.Value.CurrentQueue = producer.TraitsImplementing<ProductionQueue>().First();
+			/*if (producer != null)
+				tabsWidget.Value.CurrentQueue = producer.TraitsImplementing<ProductionQueue>().First();*/
 		}
 	}
 }

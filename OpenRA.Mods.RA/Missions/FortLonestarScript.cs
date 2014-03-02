@@ -17,7 +17,6 @@ using OpenRA.Mods.RA.Activities;
 using OpenRA.Mods.RA.Buildings;
 using OpenRA.Mods.RA.Move;
 using OpenRA.Traits;
-using OpenRA.Widgets;
 
 namespace OpenRA.Mods.RA.Missions
 {
@@ -48,7 +47,7 @@ namespace OpenRA.Mods.RA.Missions
 		World world;
 		
 		int WaveNumber = 0;
-		InfoWidget evacuateWidget;
+		//InfoWidget evacuateWidget;
 		const string ShortEvacuateTemplate = "Wave {0}";
 		static readonly string[] Patrol = { "e1", "e2", "e1" };
 		static readonly string[] Infantry = { "e4", "e1", "e1", "e2", "e1", "e2" };
@@ -202,8 +201,8 @@ namespace OpenRA.Mods.RA.Missions
 			}
 			if (world.FrameNumber == TimerTicks)
 			{
-				evacuateWidget = new InfoWidget("");
-				Ui.Root.AddChild(evacuateWidget);
+				//evacuateWidget = new InfoWidget("");
+				//Ui.Root.AddChild(evacuateWidget);
 				WaveNumber++;
 				Wave("One Initializing");
 				UpdateWaveSequence();
@@ -334,7 +333,7 @@ namespace OpenRA.Mods.RA.Missions
 
 		void UpdateWaveSequence()
 		{
-			evacuateWidget.Text = ShortEvacuateTemplate.F(WaveNumber);
+			//evacuateWidget.Text = ShortEvacuateTemplate.F(WaveNumber);
 		}
 
 		bool SpawnPatrol = true;

@@ -17,7 +17,6 @@ using OpenRA.Graphics;
 using OpenRA.Mods.RA.Activities;
 using OpenRA.Mods.RA.Move;
 using OpenRA.Traits;
-using OpenRA.Widgets;
 using OpenRA.Mods.RA.Buildings;
 
 namespace OpenRA.Mods.RA.Missions
@@ -82,7 +81,7 @@ namespace OpenRA.Mods.RA.Missions
 		WorldRenderer worldRenderer;
 
 		CountdownTimer survivalTimer;
-		CountdownTimerWidget survivalTimerWidget;
+		//CountdownTimerWidget survivalTimerWidget;
 
 		const int timerTicks = 1500 * 10;
 		const int attackTicks = 1500 * 1;
@@ -254,13 +253,13 @@ namespace OpenRA.Mods.RA.Missions
 		{
 			Sound.Play("timergo1.aud");
 			survivalTimer = new CountdownTimer(timerTicks, CountDownTimerExpired, true);
-			survivalTimerWidget = new CountdownTimerWidget(survivalTimer, "Time Until Soviet Reinforcements Arrive: {0}");
-			Ui.Root.AddChild(survivalTimerWidget);
+			//survivalTimerWidget = new CountdownTimerWidget(survivalTimer, "Time Until Soviet Reinforcements Arrive: {0}");
+			//Ui.Root.AddChild(survivalTimerWidget);
 		}
 
 		void CountDownTimerExpired(CountdownTimer countDownTimer)
 		{
-			survivalTimerWidget.Visible = false;
+			//survivalTimerWidget.Visible = false;
 			Message("The Soviet reinforcements are approuching!");
 			BuildSovietVehicles(newsovietentrypoints, newsovietrallypoints);
 			FinalAttack();

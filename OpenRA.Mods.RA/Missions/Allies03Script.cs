@@ -19,7 +19,6 @@ using OpenRA.Mods.RA.Air;
 using OpenRA.Mods.RA.Buildings;
 using OpenRA.Mods.RA.Move;
 using OpenRA.Traits;
-using OpenRA.Widgets;
 
 namespace OpenRA.Mods.RA.Missions
 {
@@ -45,7 +44,7 @@ namespace OpenRA.Mods.RA.Missions
 
 		int unitsEvacuatedThreshold;
 		int unitsEvacuated;
-		InfoWidget evacuateWidget;
+		//InfoWidget evacuateWidget;
 
 		World world;
 		Player allies1;
@@ -132,8 +131,8 @@ namespace OpenRA.Mods.RA.Missions
 			if (world.FrameNumber == 1)
 			{
 				SpawnAlliedUnit(McvName);
-				evacuateWidget = new InfoWidget("");
-				Ui.Root.AddChild(evacuateWidget);
+				//evacuateWidget = new InfoWidget("");
+				//Ui.Root.AddChild(evacuateWidget);
 				UpdateUnitsEvacuated();
 			}
 			if (world.FrameNumber == attackAtFrame)
@@ -344,7 +343,7 @@ namespace OpenRA.Mods.RA.Missions
 
 		void UpdateUnitsEvacuated()
 		{
-			evacuateWidget.Text = ShortEvacuateTemplate.F(unitsEvacuated, unitsEvacuatedThreshold);
+			//evacuateWidget.Text = ShortEvacuateTemplate.F(unitsEvacuated, unitsEvacuatedThreshold);
 			if (evacuateUnits.Status == ObjectiveStatus.InProgress && unitsEvacuated >= unitsEvacuatedThreshold)
 			{
 				evacuateUnits.Status = ObjectiveStatus.Completed;

@@ -8,8 +8,6 @@
  */
 #endregion
 
-using OpenRA.Widgets;
-
 namespace OpenRA
 {
 	public class NullInputHandler : IInputHandler
@@ -36,17 +34,14 @@ namespace OpenRA
 
 		public void OnKeyInput(KeyInput input)
 		{
-			Sync.CheckSyncUnchanged(world, () => Ui.HandleKeyPress(input));
 		}
 
 		public void OnTextInput(string text)
 		{
-			Sync.CheckSyncUnchanged(world, () => Ui.HandleTextInput(text));
 		}
 
 		public void OnMouseInput(MouseInput input)
 		{
-			Sync.CheckSyncUnchanged(world, () => Ui.HandleInput(input));
 		}
 	}
 

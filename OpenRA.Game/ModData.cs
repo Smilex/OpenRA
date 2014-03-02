@@ -14,7 +14,6 @@ using System.IO;
 using System.Linq;
 using OpenRA.FileFormats;
 using OpenRA.Graphics;
-using OpenRA.Widgets;
 
 namespace OpenRA
 {
@@ -23,7 +22,6 @@ namespace OpenRA
 		public readonly Manifest Manifest;
 		public readonly ObjectCreator ObjectCreator;
 		public Dictionary<string, Map> AvailableMaps { get; private set; }
-		public readonly WidgetLoader WidgetLoader;
 		public ILoadScreen LoadScreen = null;
 		public SheetBuilder SheetBuilder;
 		public SpriteLoader SpriteLoader;
@@ -58,7 +56,6 @@ namespace OpenRA
 			LoadScreen = ObjectCreator.CreateObject<ILoadScreen>(Manifest.LoadScreen.Value);
 			LoadScreen.Init(Manifest, Manifest.LoadScreen.NodesDict.ToDictionary(x => x.Key, x => x.Value.Value));
 			LoadScreen.Display();
-			WidgetLoader = new WidgetLoader(this);
 
 			// HACK: Mount only local folders so we have a half-working environment for the asset installer
 			FileSystem.UnmountAll();
@@ -70,7 +67,6 @@ namespace OpenRA
 		{
 			// all this manipulation of static crap here is nasty and breaks
 			// horribly when you use ModData in unexpected ways.
-			ChromeMetrics.Initialize(Manifest.ChromeMetrics);
 			ChromeProvider.Initialize(Manifest.Chrome);
 			SheetBuilder = new SheetBuilder(SheetType.Indexed);
 			SpriteLoader = new SpriteLoader(new string[0], SheetBuilder);

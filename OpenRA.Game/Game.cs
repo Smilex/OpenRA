@@ -19,7 +19,6 @@ using OpenRA.GameRules;
 using OpenRA.Graphics;
 using OpenRA.Network;
 using OpenRA.Support;
-using OpenRA.Widgets;
 
 using XRandom = OpenRA.Thirdparty.Random;
 
@@ -79,35 +78,6 @@ namespace OpenRA
 		static ConnectionState lastConnectionState = ConnectionState.PreConnecting;
 		public static int LocalClientId { get { return orderManager.Connection.LocalClientId; } }
 
-		// Hacky workaround for orderManager visibility
-		public static Widget OpenWindow(World world, string widget)
-		{
-			return Ui.OpenWindow(widget, new WidgetArgs() { { "world", world }, { "orderManager", orderManager }, { "worldRenderer", worldRenderer } });
-		}
-
-		// Who came up with the great idea of making these things
-		// impossible for the things that want them to access them directly?
-		public static Widget OpenWindow(string widget, WidgetArgs args)
-		{
-			return Ui.OpenWindow(widget, new WidgetArgs(args)
-			{
-				{ "world", worldRenderer.world },
-				{ "orderManager", orderManager },
-				{ "worldRenderer", worldRenderer },
-			});
-		}
-
-		// Load a widget with world, orderManager, worldRenderer args, without adding it to the widget tree
-		public static Widget LoadWidget(World world, string id, Widget parent, WidgetArgs args)
-		{
-			return modData.WidgetLoader.LoadWidget(new WidgetArgs(args)
-			{
-				{ "world", world },
-				{ "orderManager", orderManager },
-				{ "worldRenderer", worldRenderer },
-			}, parent, id);
-		}
-
 		static ActionQueue delayedActions = new ActionQueue();
 		public static void RunAfterTick(Action a) { delayedActions.Add(a); }
 		public static void RunAfterDelay(int delay, Action a) { delayedActions.Add(a, delay); }
@@ -139,13 +109,6 @@ namespace OpenRA
 				else
 					Renderer.BeginFrame(float2.Zero, 1f);
 
-				using (new PerfSample("render_widgets"))
-				{
-					Ui.Draw();
-					var cursorName = Ui.Root.GetCursorOuter(Viewport.LastMousePos) ?? "default";
-					CursorProvider.DrawCursor(Renderer, cursorName, Viewport.LastMousePos, (int)cursorFrame);
-				}
-
 				using (new PerfSample("render_flip"))
 				{
 					Renderer.EndFrame(new DefaultInputHandler(orderManager.world));
@@ -168,7 +131,6 @@ namespace OpenRA
 				using (new PerfSample("tick_time"))
 				{
 					orderManager.LastTickTime += Settings.Game.Timestep;
-					Ui.Tick();
 					var world = orderManager.world;
 					if (orderManager.GameStarted)
 						++Viewport.TicksSinceLastMove;
@@ -229,9 +191,6 @@ namespace OpenRA
 
 			if (orderManager.GameStarted)
 				return;
-
-			Ui.MouseFocusWidget = null;
-			Ui.KeyboardFocusWidget = null;
 
 			orderManager.LocalFrameNumber = 0;
 			orderManager.LastTickTime = Environment.TickCount;
@@ -331,7 +290,6 @@ namespace OpenRA
 			AddChatLine = (a, b, c) => { };
 			ConnectionStateChanged = om => { };
 			BeforeGameStart = () => { };
-			Ui.ResetAll();
 
 			worldRenderer = null;
 			if (server != null)
@@ -365,7 +323,6 @@ namespace OpenRA
 			{
 				while (true)
 				{
-					Settings.Server.Map = WidgetUtils.ChooseInitialMap(Settings.Server.Map);
 					Settings.Save();
 					CreateServer(new ServerSettings(Settings.Server));
 					while (true)

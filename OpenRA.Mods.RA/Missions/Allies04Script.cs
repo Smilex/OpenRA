@@ -19,7 +19,6 @@ using OpenRA.Mods.RA.Buildings;
 using OpenRA.Mods.RA.Move;
 using OpenRA.Mods.RA.Render;
 using OpenRA.Traits;
-using OpenRA.Widgets;
 
 namespace OpenRA.Mods.RA.Missions
 {
@@ -53,7 +52,7 @@ namespace OpenRA.Mods.RA.Missions
 		int frameInfiltrated = -1;
 
 		CountdownTimer destroyBaseTimer;
-		CountdownTimerWidget destroyBaseTimerWidget;
+		//CountdownTimerWidget destroyBaseTimerWidget;
 
 		Player allies1;
 		Player allies2;
@@ -118,8 +117,8 @@ namespace OpenRA.Mods.RA.Missions
 				{
 					Sound.Play("timergo1.aud");
 					destroyBaseTimer = new CountdownTimer(destroyBaseTicks, OnDestroyBaseTimerExpired, true);
-					destroyBaseTimerWidget = new CountdownTimerWidget(destroyBaseTimer, "Secure lab in: {0}");
-					Ui.Root.AddChild(destroyBaseTimerWidget);
+					//destroyBaseTimerWidget = new CountdownTimerWidget(destroyBaseTimer, "Secure lab in: {0}");
+					//Ui.Root.AddChild(destroyBaseTimerWidget);
 				}
 
 				if (world.FrameNumber >= frameInfiltrated + 200)
