@@ -1323,8 +1323,8 @@ Rules:
 		-SpawnMPUnits:
 		-MPStartLocations:
 		DesertShellmapScript:
-		LoadWidgetAtGameStart:
-			Widget: MAINMENU
+		#LoadWidgetAtGameStart:
+		#	Widget: MAINMENU
 	TRAN.Husk2:
 		Burns:
 			Damage: 0

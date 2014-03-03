@@ -94,8 +94,8 @@ Smudges:
 
 Rules:
 	World:
-		LoadWidgetAtGameStart:
-			Widget: MAINMENU
+		#LoadWidgetAtGameStart:
+		#	Widget: MAINMENU
 
 Sequences:
 

@@ -1,8 +1,8 @@
 World:
 	ScreenMap:
 	ActorMap:
-	LoadWidgetAtGameStart:
-		Widget: INGAME_ROOT
+	#LoadWidgetAtGameStart:
+	#	Widget: INGAME_ROOT
 	BuildingInfluence:
 	ChooseBuildTabOnSelect:
 	PaletteFromFile@player:

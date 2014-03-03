@@ -39,8 +39,8 @@ Rules:
 	World:
 		-SpawnMPUnits:
 		-MPStartLocations:
-		LoadWidgetAtGameStart:
-			Widget: MAINMENU
+		#LoadWidgetAtGameStart:
+		#	Widget: MAINMENU
 
 Sequences:
 
