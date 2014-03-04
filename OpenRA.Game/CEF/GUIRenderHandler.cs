@@ -1,0 +1,97 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Xilium.CefGlue;
+using OpenRA.FileFormats.Graphics;
+using OpenRA.Graphics;
+using System.Drawing;
+using System.Drawing.Imaging;
+
+namespace OpenRA.CEF
+{
+	class GUIRenderHandler : CefRenderHandler
+	{
+		private int width;
+		private int height;
+
+		private ITexture texture;
+		private IVertexBuffer<Vertex> vertices;
+		private Vertex[] verts;
+		private IShader shader;
+
+		private Bitmap lastBitmap;
+
+		public GUIRenderHandler(int width, int height)
+		{
+			this.width = width;
+			this.height = height;
+			texture = Game.Renderer.Device.CreateTexture();
+
+			verts = new Vertex[4];
+			verts[0] = new Vertex(new float2(0,0), new float2(0,0), new float2(0,0));
+			verts[1] = new Vertex(new float2(1, 0), new float2(1, 0), new float2(1, 0));
+			verts[2] = new Vertex(new float2(1, 1), new float2(1, 1), new float2(1, 1));
+			verts[3] = new Vertex(new float2(0, 1), new float2(0, 1), new float2(0, 1));
+
+			vertices = Game.Renderer.Device.CreateVertexBuffer(4);
+			vertices.SetData(verts, 4);
+
+			shader = Game.Renderer.Device.CreateShader("rgba");
+		}
+
+		public void Render()
+		{
+			if (lastBitmap == null)
+				return;
+
+			texture.SetData(lastBitmap);
+			var sheet = new Sheet(texture);
+			var sprite = new Sprite(sheet, new Rectangle(0, 0, width, height), TextureChannel.Alpha);
+			Game.Renderer.RgbaSpriteRenderer.DrawSprite(sprite, new float2(0,0));
+		}
+
+		protected override bool GetScreenInfo(CefBrowser browser, CefScreenInfo screenInfo)
+		{
+			return false;
+		}
+
+		protected override void OnPopupSize(CefBrowser browser, CefRectangle rect)
+		{
+		}
+
+		protected override void OnPaint(CefBrowser browser, CefPaintElementType type, CefRectangle[] dirtyRects, IntPtr buffer, int width, int height)
+		{
+			lastBitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppRgb, buffer);
+		}
+
+		protected override void OnCursorChange(CefBrowser browser, IntPtr cursorHandle)
+		{
+		}
+
+		protected override void OnScrollOffsetChanged(CefBrowser browser)
+		{
+		}
+
+		protected override bool GetRootScreenRect(CefBrowser browser, ref CefRectangle rect)
+		{
+			return GetViewRect(browser, ref rect);
+		}
+
+		protected override bool GetScreenPoint(CefBrowser browser, int viewX, int viewY, ref int screenX, ref int screenY)
+		{
+			screenX = viewX;
+			screenY = viewY;
+			return true;
+		}
+
+		protected override bool GetViewRect(CefBrowser browser, ref CefRectangle rect)
+		{
+			rect.X = 0;
+			rect.Y = 0;
+			rect.Width = width;
+			rect.Height = height;
+			return true;
+		}
+	}
+}

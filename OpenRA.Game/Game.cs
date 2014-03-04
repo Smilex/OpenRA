@@ -19,6 +19,8 @@ using OpenRA.GameRules;
 using OpenRA.Graphics;
 using OpenRA.Network;
 using OpenRA.Support;
+using OpenRA.CEF;
+using OpenRA.FileFormats.Graphics;
 
 using XRandom = OpenRA.Thirdparty.Random;
 
@@ -31,6 +33,7 @@ namespace OpenRA
 		public static ModData modData;
 		public static Settings Settings;
 		static WorldRenderer worldRenderer;
+		public static GUIClient GUI;
 
 		internal static OrderManager orderManager;
 		static Server.Server server;
@@ -109,10 +112,12 @@ namespace OpenRA
 				else
 					Renderer.BeginFrame(float2.Zero, 1f);
 
+				GUI.Render();
+
 				using (new PerfSample("render_flip"))
 				{
 					Renderer.EndFrame(new DefaultInputHandler(orderManager.world));
-				}
+				}	
 			}
 
 			PerfHistory.items["render"].Tick();
@@ -137,6 +142,8 @@ namespace OpenRA
 
 					Sound.Tick();
 					Sync.CheckSyncUnchanged(world, orderManager.TickImmediate);
+
+					GUI.Tick();
 
 					if (world != null)
 					{
@@ -351,6 +358,16 @@ namespace OpenRA
 			}
 			else
 			{
+				if (Settings.Graphics.Mode == FileFormats.Graphics.WindowMode.Windowed)
+				{
+					GUI = new GUIClient(Settings.Graphics.WindowedSize.X, Settings.Graphics.WindowedSize.Y);
+				}
+				else
+				{
+					GUI = new GUIClient(Settings.Graphics.FullscreenSize.X, Settings.Graphics.FullscreenSize.Y);
+				}
+				GUI.Initialize();
+
 				modData.LoadScreen.StartGame();
 				Settings.Save();
 				if (!string.IsNullOrEmpty(replay))

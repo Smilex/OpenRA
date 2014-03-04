@@ -82,6 +82,7 @@ namespace OpenRA.FileFormats.Graphics
 		void SetData(Bitmap bitmap);
 		void SetData(uint[,] colors);
 		void SetData(byte[] colors, int width, int height);
+		void SetData(IntPtr buffer, int width, int height);
 		byte[] GetData();
 		Size Size { get; }
 	}

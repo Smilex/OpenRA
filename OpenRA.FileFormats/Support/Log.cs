@@ -66,6 +66,9 @@ namespace OpenRA
 
 		public static void Write(string channel, string format, params object[] args)
 		{
+			if (format == null)
+				return;
+
 			ChannelInfo info;
 			if (!Channels.TryGetValue(channel, out info))
 				throw new Exception("Tried logging to non-existant channel " + channel);

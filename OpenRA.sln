@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio Express 2013 for Windows Desktop
+VisualStudioVersion = 12.0.30110.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenRA.FileFormats", "OpenRA.FileFormats\OpenRA.FileFormats.csproj", "{BDAEAB25-991E-46A7-AF1E-4F0E03358DAA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenRA.Game", "OpenRA.Game\OpenRA.Game.csproj", "{0DFB103F-2962-400F-8C6D-E2C28CCBA633}"
@@ -43,27 +45,29 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenRA.Renderer.Sdl2", "Ope
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common Lua scripts", "Common Lua scripts", "{FCA943AB-E622-415E-8A61-639D97F62EEC}"
 	ProjectSection(SolutionItems) = preProject
-		mods\common\lua\utils.lua = mods\common\lua\utils.lua
-		mods\common\lua\team.lua = mods\common\lua\team.lua
-		mods\common\lua\supportpowers.lua = mods\common\lua\supportpowers.lua
-		mods\common\lua\rules.lua = mods\common\lua\rules.lua
-		mods\common\lua\reinforcements.lua = mods\common\lua\reinforcements.lua
-		mods\common\lua\openra.lua = mods\common\lua\openra.lua
-		mods\common\lua\mission.lua = mods\common\lua\mission.lua
-		mods\common\lua\media.lua = mods\common\lua\media.lua
-		mods\common\lua\map.lua = mods\common\lua\map.lua
 		mods\common\lua\actor.lua = mods\common\lua\actor.lua
+		mods\common\lua\map.lua = mods\common\lua\map.lua
+		mods\common\lua\media.lua = mods\common\lua\media.lua
+		mods\common\lua\mission.lua = mods\common\lua\mission.lua
+		mods\common\lua\openra.lua = mods\common\lua\openra.lua
+		mods\common\lua\reinforcements.lua = mods\common\lua\reinforcements.lua
+		mods\common\lua\rules.lua = mods\common\lua\rules.lua
+		mods\common\lua\supportpowers.lua = mods\common\lua\supportpowers.lua
+		mods\common\lua\team.lua = mods\common\lua\team.lua
+		mods\common\lua\utils.lua = mods\common\lua\utils.lua
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tiberian Dawn Lua scripts", "Tiberian Dawn Lua scripts", "{62FCD0D0-6D24-435D-9DD8-3CCADCF7ECAB}"
 	ProjectSection(SolutionItems) = preProject
-		mods\cnc\maps\shellmap\shellmap.lua = mods\cnc\maps\shellmap\shellmap.lua
 		mods\cnc\maps\gdi01\gdi01.lua = mods\cnc\maps\gdi01\gdi01.lua
 		mods\cnc\maps\gdi02\gdi02.lua = mods\cnc\maps\gdi02\gdi02.lua
 		mods\cnc\maps\nod01\nod01.lua = mods\cnc\maps\nod01\nod01.lua
 		mods\cnc\maps\nod03a\nod03a.lua = mods\cnc\maps\nod03a\nod03a.lua
 		mods\cnc\maps\nod03b\nod03b.lua = mods\cnc\maps\nod03b\nod03b.lua
+		mods\cnc\maps\shellmap\shellmap.lua = mods\cnc\maps\shellmap\shellmap.lua
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CefGlue", "Xilium.CefGlue\CefGlue.csproj", "{703FF300-34B9-48D4-A5D6-E741F48D5F95}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -208,6 +212,17 @@ Global
 		{33D03738-C154-4028-8EA8-63A3C488A651}.Release|Any CPU.Build.0 = Release|Any CPU
 		{33D03738-C154-4028-8EA8-63A3C488A651}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{33D03738-C154-4028-8EA8-63A3C488A651}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{703FF300-34B9-48D4-A5D6-E741F48D5F95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{703FF300-34B9-48D4-A5D6-E741F48D5F95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{703FF300-34B9-48D4-A5D6-E741F48D5F95}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{703FF300-34B9-48D4-A5D6-E741F48D5F95}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{703FF300-34B9-48D4-A5D6-E741F48D5F95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{703FF300-34B9-48D4-A5D6-E741F48D5F95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{703FF300-34B9-48D4-A5D6-E741F48D5F95}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{703FF300-34B9-48D4-A5D6-E741F48D5F95}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = OpenRA.Game\OpenRA.Game.csproj
@@ -215,7 +230,7 @@ Global
 		$0.DotNetNamingPolicy = $1
 		$1.DirectoryNamespaceAssociation = None
 		$1.ResourceNamePolicy = FileFormatDefault
-		$0.TextStylePolicy = $2
+		$0.TextStylePolicy = $7
 		$2.TabsToSpaces = False
 		$2.NoTabsAfterNonTabs = True
 		$2.inheritsSet = VisualStudio
@@ -240,27 +255,23 @@ Global
 		$3.inheritsSet = Mono
 		$3.inheritsScope = text/x-csharp
 		$3.scope = text/x-csharp
-		$0.TextStylePolicy = $4
 		$4.TabsToSpaces = False
 		$4.NoTabsAfterNonTabs = True
 		$4.inheritsSet = VisualStudio
 		$4.inheritsScope = text/plain
 		$4.scope = text/plain
-		$0.TextStylePolicy = $5
 		$5.NoTabsAfterNonTabs = True
 		$5.inheritsSet = Mono
 		$5.inheritsScope = text/plain
 		$5.scope = text/microsoft-resx
-		$0.XmlFormattingPolicy = $6
+		$0.XmlFormattingPolicy = $8
 		$6.inheritsSet = Mono
 		$6.inheritsScope = application/xml
 		$6.scope = text/microsoft-resx
-		$0.TextStylePolicy = $7
 		$7.NoTabsAfterNonTabs = True
 		$7.inheritsSet = Mono
 		$7.inheritsScope = text/plain
 		$7.scope = application/xml
-		$0.XmlFormattingPolicy = $8
 		$8.inheritsSet = Mono
 		$8.inheritsScope = application/xml
 		$8.scope = application/xml
@@ -269,21 +280,19 @@ Global
 		$9.IncludeInNewFiles = True
 		$0.NameConventionPolicy = $10
 		$10.Rules = $11
-		$11.NamingRule = $12
+		$11.NamingRule = $31
 		$12.Name = Namespaces
 		$12.AffectedEntity = Namespace
 		$12.VisibilityMask = VisibilityMask
 		$12.NamingStyle = PascalCase
 		$12.IncludeInstanceMembers = True
 		$12.IncludeStaticEntities = True
-		$11.NamingRule = $13
 		$13.Name = Types
 		$13.AffectedEntity = Class, Struct, Enum, Delegate
 		$13.VisibilityMask = Public
 		$13.NamingStyle = PascalCase
 		$13.IncludeInstanceMembers = True
 		$13.IncludeStaticEntities = True
-		$11.NamingRule = $14
 		$14.Name = Interfaces
 		$14.RequiredPrefixes = $15
 		$15.String = I
@@ -292,7 +301,6 @@ Global
 		$14.NamingStyle = PascalCase
 		$14.IncludeInstanceMembers = True
 		$14.IncludeStaticEntities = True
-		$11.NamingRule = $16
 		$16.Name = Attributes
 		$16.RequiredSuffixes = $17
 		$17.String = Attribute
@@ -301,7 +309,6 @@ Global
 		$16.NamingStyle = PascalCase
 		$16.IncludeInstanceMembers = True
 		$16.IncludeStaticEntities = True
-		$11.NamingRule = $18
 		$18.Name = Event Arguments
 		$18.RequiredSuffixes = $19
 		$19.String = EventArgs
@@ -310,7 +317,6 @@ Global
 		$18.NamingStyle = PascalCase
 		$18.IncludeInstanceMembers = True
 		$18.IncludeStaticEntities = True
-		$11.NamingRule = $20
 		$20.Name = Exceptions
 		$20.RequiredSuffixes = $21
 		$21.String = Exception
@@ -319,70 +325,60 @@ Global
 		$20.NamingStyle = PascalCase
 		$20.IncludeInstanceMembers = True
 		$20.IncludeStaticEntities = True
-		$11.NamingRule = $22
 		$22.Name = Methods
 		$22.AffectedEntity = Methods
 		$22.VisibilityMask = Protected, Public
 		$22.NamingStyle = PascalCase
 		$22.IncludeInstanceMembers = True
 		$22.IncludeStaticEntities = True
-		$11.NamingRule = $23
 		$23.Name = Static Readonly Fields
 		$23.AffectedEntity = ReadonlyField
 		$23.VisibilityMask = Protected, Public
 		$23.NamingStyle = PascalCase
 		$23.IncludeInstanceMembers = False
 		$23.IncludeStaticEntities = True
-		$11.NamingRule = $24
 		$24.Name = Fields
 		$24.AffectedEntity = Field
 		$24.VisibilityMask = Protected, Public
 		$24.NamingStyle = PascalCase
 		$24.IncludeInstanceMembers = True
 		$24.IncludeStaticEntities = True
-		$11.NamingRule = $25
 		$25.Name = ReadOnly Fields
 		$25.AffectedEntity = ReadonlyField
 		$25.VisibilityMask = Protected, Public
 		$25.NamingStyle = PascalCase
 		$25.IncludeInstanceMembers = True
 		$25.IncludeStaticEntities = False
-		$11.NamingRule = $26
 		$26.Name = Constant Fields
 		$26.AffectedEntity = ConstantField
 		$26.VisibilityMask = Protected, Public
 		$26.NamingStyle = PascalCase
 		$26.IncludeInstanceMembers = True
 		$26.IncludeStaticEntities = True
-		$11.NamingRule = $27
 		$27.Name = Properties
 		$27.AffectedEntity = Property
 		$27.VisibilityMask = Protected, Public
 		$27.NamingStyle = PascalCase
 		$27.IncludeInstanceMembers = True
 		$27.IncludeStaticEntities = True
-		$11.NamingRule = $28
 		$28.Name = Events
 		$28.AffectedEntity = Event
 		$28.VisibilityMask = Protected, Public
 		$28.NamingStyle = PascalCase
 		$28.IncludeInstanceMembers = True
 		$28.IncludeStaticEntities = True
-		$11.NamingRule = $29
 		$29.Name = Enum Members
 		$29.AffectedEntity = EnumMember
 		$29.VisibilityMask = VisibilityMask
 		$29.NamingStyle = PascalCase
 		$29.IncludeInstanceMembers = True
 		$29.IncludeStaticEntities = True
-		$11.NamingRule = $30
 		$30.Name = Parameters
 		$30.AffectedEntity = Parameter
 		$30.VisibilityMask = VisibilityMask
 		$30.NamingStyle = CamelCase
 		$30.IncludeInstanceMembers = True
 		$30.IncludeStaticEntities = True
-		$11.NamingRule = $31
 		$31.Name = Type Parameters
 		$31.RequiredPrefixes = $32
 		$32.String = T
@@ -399,8 +395,5 @@ Global
 		$35.LineAlign = 0
 		$34.inheritsSet = Mono
 		outputpath = .
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
