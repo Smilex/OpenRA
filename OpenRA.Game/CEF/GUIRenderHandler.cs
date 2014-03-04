@@ -20,7 +20,8 @@ namespace OpenRA.CEF
 		private Vertex[] verts;
 		private IShader shader;
 
-		private Bitmap lastBitmap;
+		private Sprite sprite;
+		private Sheet sheet;
 
 		public GUIRenderHandler(int width, int height)
 		{
@@ -42,12 +43,8 @@ namespace OpenRA.CEF
 
 		public void Render()
 		{
-			if (lastBitmap == null)
-				return;
+			if (sprite == null) return;
 
-			texture.SetData(lastBitmap);
-			var sheet = new Sheet(texture);
-			var sprite = new Sprite(sheet, new Rectangle(0, 0, width, height), TextureChannel.Alpha);
 			Game.Renderer.RgbaSpriteRenderer.DrawSprite(sprite, new float2(0,0));
 		}
 
@@ -62,7 +59,13 @@ namespace OpenRA.CEF
 
 		protected override void OnPaint(CefBrowser browser, CefPaintElementType type, CefRectangle[] dirtyRects, IntPtr buffer, int width, int height)
 		{
-			lastBitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppRgb, buffer);
+			texture.SetData(buffer, width, height);
+
+			if (sprite == null)
+			{
+				sheet = new Sheet(texture);
+				sprite = new Sprite(sheet, new Rectangle(0, 0, width, height), TextureChannel.Alpha);
+			}
 		}
 
 		protected override void OnCursorChange(CefBrowser browser, IntPtr cursorHandle)

@@ -112,7 +112,7 @@ namespace OpenRA
 				else
 					Renderer.BeginFrame(float2.Zero, 1f);
 
-				GUI.Render();
+				GUI.Render();	
 
 				using (new PerfSample("render_flip"))
 				{
