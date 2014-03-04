@@ -8,5 +8,9 @@ namespace OpenRA.CEF
 {
 	class GUIApp : CefApp
 	{
+		protected override void OnRegisterCustomSchemes (CefSchemeRegistrar registrar)
+		{
+			registrar.AddCustomScheme("openra", true, true, false);
+		}
 	}
 }

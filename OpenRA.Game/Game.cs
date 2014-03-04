@@ -392,7 +392,7 @@ namespace OpenRA
 		}
 
 		static bool quit;
-		public static event Action OnQuit = () => { };
+		public static event Action OnQuit = () => {};
 
 		static double idealFrameTime;
 		public static void SetIdealFrameTime(int fps)

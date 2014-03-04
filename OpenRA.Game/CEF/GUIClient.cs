@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 using Xilium.CefGlue;
 
 namespace OpenRA.CEF
@@ -10,6 +11,7 @@ namespace OpenRA.CEF
 	{
 		private GUIRenderHandler renderHandler;
 		private GUILoadHandler loadHandler;
+		private GUIRequestHandler requestHandler;
 		private CefSettings settings;
 		private CefBrowserSettings browserSettings;
 		private CefWindowInfo windowInfo;
@@ -20,6 +22,7 @@ namespace OpenRA.CEF
 		{
 			renderHandler = new GUIRenderHandler(width, height);
 			loadHandler = new GUILoadHandler();
+			requestHandler = new GUIRequestHandler();
 
 			settings = new CefSettings
 			{
@@ -31,12 +34,12 @@ namespace OpenRA.CEF
 			windowInfo.SetTransparentPainting(true);
 
 			browserSettings = new CefBrowserSettings();
+			browserSettings.FileAccessFromFileUrls = CefState.Enabled;
 			app = new GUIApp();
 		}
 
 		~GUIClient()
 		{
-			browser.GetHost().CloseBrowser(true);
 			CefRuntime.Shutdown();
 		}
 
@@ -53,8 +56,18 @@ namespace OpenRA.CEF
 
 			CefRuntime.Initialize(cefMainArgs, settings, app);
 
+			var location = System.Reflection.Assembly.GetEntryAssembly().Location;
+			var directoryPath = Path.GetDirectoryName(location);
+
 			browser = CefBrowserHost.CreateBrowserSync(windowInfo, this, browserSettings);
-			browser.GetMainFrame().LoadUrl("http://openra.res0l.net/");
+			browser.GetMainFrame().LoadUrl("file:///" + directoryPath + "/mods/index.html");
+
+			Game.OnQuit += Shutdown;
+		}
+
+		public void Shutdown()
+		{
+			browser.GetHost().CloseBrowser();
 		}
 
 		public void Render ()
@@ -106,6 +119,24 @@ namespace OpenRA.CEF
 		protected override CefLoadHandler GetLoadHandler()
 		{
 			return loadHandler;
+		}
+
+		protected override CefRequestHandler GetRequestHandler()
+		{
+			return base.GetRequestHandler();
+		}
+
+		internal class GUIRequestHandler : CefRequestHandler
+		{
+			GUIResourceHandler resHandler;
+			public GUIRequestHandler()
+			{
+				resHandler = new GUIResourceHandler();
+			}
+			protected override CefResourceHandler GetResourceHandler(CefBrowser browser, CefFrame frame, CefRequest request)
+			{
+				return resHandler;
+			}
 		}
 	}
 }
