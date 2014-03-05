@@ -358,14 +358,8 @@ namespace OpenRA
 			}
 			else
 			{
-				if (Settings.Graphics.Mode == FileFormats.Graphics.WindowMode.Windowed)
-				{
-					GUI = new GUIClient(Settings.Graphics.WindowedSize.X, Settings.Graphics.WindowedSize.Y);
-				}
-				else
-				{
-					GUI = new GUIClient(Settings.Graphics.FullscreenSize.X, Settings.Graphics.FullscreenSize.Y);
-				}
+
+				GUI = new GUIClient(Renderer.Device.WindowSize.Width, Renderer.Device.WindowSize.Height);
 				GUI.Initialize();
 
 				modData.LoadScreen.StartGame();

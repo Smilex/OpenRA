@@ -59,12 +59,12 @@ namespace OpenRA.CEF
 
 		protected override void OnPaint(CefBrowser browser, CefPaintElementType type, CefRectangle[] dirtyRects, IntPtr buffer, int width, int height)
 		{
-			texture.SetData(buffer, Exts.NextPowerOf2(width), Exts.NextPowerOf2(height));
+			texture.SetData(buffer, width, height);
 
 			if (sprite == null)
 			{
 				sheet = new Sheet(texture);
-				sprite = new Sprite(sheet, new Rectangle(0, 0, width, height), TextureChannel.Alpha);
+				sprite = new Sprite(sheet, new Rectangle(0, 0, this.width, this.height), TextureChannel.Alpha);
 			}
 		}
 
@@ -92,8 +92,14 @@ namespace OpenRA.CEF
 		{
 			rect.X = 0;
 			rect.Y = 0;
-			rect.Width = width;
-			rect.Height = height;
+			if (Exts.IsPowerOf2(width))
+				rect.Width = width;
+			else
+				rect.Width = Exts.NextPowerOf2(width);
+			if (Exts.IsPowerOf2(height))
+				rect.Height = height;
+			else
+				rect.Height = Exts.NextPowerOf2(height);
 			return true;
 		}
 	}
