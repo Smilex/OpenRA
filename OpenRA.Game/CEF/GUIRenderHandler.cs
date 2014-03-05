@@ -59,7 +59,7 @@ namespace OpenRA.CEF
 
 		protected override void OnPaint(CefBrowser browser, CefPaintElementType type, CefRectangle[] dirtyRects, IntPtr buffer, int width, int height)
 		{
-			texture.SetData(buffer, width, height);
+			texture.SetData(buffer, Exts.NextPowerOf2(width), Exts.NextPowerOf2(height));
 
 			if (sprite == null)
 			{

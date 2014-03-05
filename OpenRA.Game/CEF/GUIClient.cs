@@ -23,6 +23,7 @@ namespace OpenRA.CEF
 			renderHandler = new GUIRenderHandler(width, height);
 			loadHandler = new GUILoadHandler();
 			requestHandler = new GUIRequestHandler();
+			
 
 			settings = new CefSettings
 			{
