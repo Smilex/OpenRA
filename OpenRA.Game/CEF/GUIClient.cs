@@ -26,7 +26,8 @@ namespace OpenRA.CEF
 
 			settings = new CefSettings
 			{
-				SingleProcess = true
+				SingleProcess = true,
+				PackLoadingDisabled = true
 			};
 
 			windowInfo = CefWindowInfo.Create();
