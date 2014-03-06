@@ -9,10 +9,12 @@ namespace OpenRA.CEF
 	class GUIApp : CefApp
 	{
 		private GUIRenderProcessHandler renderProcessHandler;
+		private GUIBrowserProcessHandler browserProcessHandler;
 
 		public GUIApp()
 		{
 			renderProcessHandler = new GUIRenderProcessHandler();
+			browserProcessHandler = new GUIBrowserProcessHandler();
 		}
 
 		protected override void OnRegisterCustomSchemes (CefSchemeRegistrar registrar)
@@ -23,6 +25,11 @@ namespace OpenRA.CEF
 		protected override CefRenderProcessHandler GetRenderProcessHandler()
 		{
 			return renderProcessHandler;
+		}
+
+		protected override CefBrowserProcessHandler GetBrowserProcessHandler()
+		{
+			return browserProcessHandler;
 		}
 	}
 }

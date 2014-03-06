@@ -60,7 +60,7 @@ namespace OpenRA.CEF
 			var directoryPath = Path.GetDirectoryName(location);
 
 			browser = CefBrowserHost.CreateBrowserSync(windowInfo, this, browserSettings);
-			browser.GetMainFrame().LoadUrl("file:///" + directoryPath + "/mods/index.html");
+			browser.GetMainFrame().LoadUrl("file:///" + directoryPath + "/mods/cnc/gui/mainmenu.html");
 
 			Game.OnQuit += Shutdown;
 		}
@@ -82,6 +82,7 @@ namespace OpenRA.CEF
 
 		public void HandleMouseInput(MouseInput input)
 		{
+
 			CefMouseEvent cefEvent = new CefMouseEvent(input.Location.X, input.Location.Y, CefEventFlags.None);
 			CefMouseButtonType type = CefMouseButtonType.Left;
 			if (input.Button == MouseButton.Left)

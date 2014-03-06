@@ -45,7 +45,7 @@ namespace OpenRA.CEF
 		{
 			if (sprite == null) return;
 
-			Game.Renderer.RgbaSpriteRenderer.DrawSprite(sprite, new float2(0,0));
+			Game.Renderer.RgbaSpriteRenderer.DrawSprite(sprite, new float2(0,0), new float2(width, height));
 		}
 
 		protected override bool GetScreenInfo(CefBrowser browser, CefScreenInfo screenInfo)
@@ -64,7 +64,7 @@ namespace OpenRA.CEF
 			if (sprite == null)
 			{
 				sheet = new Sheet(texture);
-				sprite = new Sprite(sheet, new Rectangle(0, 0, this.width, this.height), TextureChannel.Alpha);
+				sprite = new Sprite(sheet, new Rectangle(0, 0, width, height), TextureChannel.Alpha);
 			}
 		}
 
@@ -92,14 +92,16 @@ namespace OpenRA.CEF
 		{
 			rect.X = 0;
 			rect.Y = 0;
-			if (Exts.IsPowerOf2(width))
+			rect.Width = width;
+			rect.Height = height;
+			/*if (Exts.IsPowerOf2(width))
 				rect.Width = width;
 			else
 				rect.Width = Exts.NextPowerOf2(width);
 			if (Exts.IsPowerOf2(height))
 				rect.Height = height;
 			else
-				rect.Height = Exts.NextPowerOf2(height);
+				rect.Height = Exts.NextPowerOf2(height);*/
 			return true;
 		}
 	}

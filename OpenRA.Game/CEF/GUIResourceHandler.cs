@@ -4,25 +4,40 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.IO;
+using System.Windows.Media.Imaging;
 using Xilium.CefGlue;
 
 namespace OpenRA.CEF
 {
+	class GUISchemeHandlerFactory : CefSchemeHandlerFactory
+	{
+
+		protected override CefResourceHandler Create(CefBrowser browser, CefFrame frame, string schemeName, CefRequest request)
+		{
+			return new GUIResourceHandler();
+		}
+	}
+
 	class GUIResourceHandler : CefResourceHandler
 	{
-		private string data;
+		private byte[] data;
+		private string dataType;
+		private int written;
 
 		protected override bool ProcessRequest(CefRequest request, CefCallback callback)
 		{
-			if (request.Url.Contains("openra://"))
+			if (request.Url.Contains("image"))
 			{
-				var location = System.Reflection.Assembly.GetEntryAssembly().Location;
-				var directoryPath = Path.GetDirectoryName(location);
+				var bitmap = Graphics.CursorProvider.GetCursorSequence("default").GetSprite(0).sheet.AsBitmap();
+				MemoryStream ms = new MemoryStream();
+				bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+				data = ms.ToArray();
 
-				request.Url = request.Url.Remove(0, 9);
-				request.Url = "file:///" + directoryPath + '/' + request.Url;
+				dataType = "image/png";
+				written = 0;
 
 				callback.Continue();
+				
 				return true;
 			}
 
@@ -32,14 +47,31 @@ namespace OpenRA.CEF
 		protected override void GetResponseHeaders(CefResponse response, out long responseLength, out string redirectUrl)
 		{
 			response.Status = 200;
-			responseLength = 0;
-			redirectUrl = "";
+			responseLength = data.Length;
+			response.MimeType = dataType;
+			redirectUrl = null;
 		}
 
 		protected override bool ReadResponse(Stream response, int bytesToRead, out int bytesRead, CefCallback callback)
 		{
-			bytesRead = 0;
-			return false;
+			int writeLength = 0;
+			bool ret = true;
+
+			if (bytesToRead + written < data.Length)
+			{
+				writeLength = bytesToRead;
+				callback.Continue();
+			}
+			else
+			{
+				writeLength = data.Length - written;
+				ret = false;
+			}
+
+			response.Write(data, written, writeLength);
+			written += writeLength;
+			bytesRead = written;
+			return ret;
 		}
 
 		protected override bool CanGetCookie(CefCookie cookie)
@@ -54,7 +86,9 @@ namespace OpenRA.CEF
 
 		protected override void Cancel()
 		{
-			
+			data = null;
+			written = 0;
+			dataType = "";
 		}
 	}
 }
