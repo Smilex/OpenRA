@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+
+	<body>
+		<link rel="stylesheet" href="style.css">
+		<img id="refinery" src="" />
+		<img id="power" src="" />
+		<img id="barracks" src="" />
+		<div class="mainmenu buttonbar">
+			<div class="mainmenu button">
+				Singleplayer
+			</div>
+			<div class="mainmenu button">
+				Multiplayer
+			</div>
+			<div class="mainmenu button">
+				Options
+			</div>
+			<div class="mainmenu button">
+				Mods
+			</div>
+			<div class="mainmenu button" onclick="OpenRA.Shutdown();">
+				Quit
+			</div>
+		</div>
+		<script>
+			window.onload = function () {
+				//alert(OpenRA.GetSequence("e1", "idle1", 0));
+				//document.getElementById("refinery").src = OpenRA.GetSequence("proc", "icon", 0);
+				document.getElementById("power").src = OpenRA.GetSequence("powr", "icon", 0);
+				document.getElementById("barracks").src = OpenRA.GetSequence("barr", "icon", 0);
+			}
+		</script>
+	</body>
+</html>

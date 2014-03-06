@@ -1,0 +1,28 @@
+.mainmenu.button {
+	background-color: rgba(92,0,0, 0.878);
+	border: 1px solid rgb(128, 0, 0);
+	font-family: arial;
+	color: #FFF;
+	margin-left: 5px;
+	margin-right: 5px;
+	width: 140px;
+	height: 35px;
+	text-align: center;
+	line-height: 35px;
+	display: inline-block;
+}
+
+.mainmenu.button:hover {
+	background-color: rgba(128,0,0,0.878);
+}
+
+.mainmenu.button:active {
+	background-color: rgba(80,43,43,0.878);
+}
+
+.mainmenu.buttonbar {
+	position: absolute;
+	width: 100%;
+	bottom: 78px;
+	text-align: center;
+}
