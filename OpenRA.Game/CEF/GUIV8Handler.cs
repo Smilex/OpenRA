@@ -13,7 +13,7 @@ namespace OpenRA.CEF
 	{
 		protected override bool Execute(string name, CefV8Value obj, CefV8Value[] arguments, out CefV8Value returnValue, out string exception)
 		{
-			if (name == "shutdown")
+			if (name == "Shutdown")
 			{
 				returnValue = CefV8Value.CreateUndefined();
 				exception = null;

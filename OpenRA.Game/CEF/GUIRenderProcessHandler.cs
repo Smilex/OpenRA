@@ -16,7 +16,7 @@ namespace OpenRA.CEF
 			CefV8Value modObj = CefV8Value.CreateObject(null);
 
 			openraObj.SetValue("version", CefV8Value.CreateString(Game.modData.Manifest.Mod.Version), CefV8PropertyAttribute.ReadOnly);
-			openraObj.SetValue("Shutdown", CefV8Value.CreateFunction("shutdown", v8Handler), CefV8PropertyAttribute.None);
+			openraObj.SetValue("Shutdown", CefV8Value.CreateFunction("Shutdown", v8Handler), CefV8PropertyAttribute.None);
 			openraObj.SetValue("GetSequence", CefV8Value.CreateFunction("GetSequence", v8Handler), CefV8PropertyAttribute.None);
 
 			openraObj.SetValue("Mod", modObj, CefV8PropertyAttribute.None);
