@@ -19,6 +19,9 @@ namespace OpenRA.CEF
 			openraObj.SetValue("Shutdown", CefV8Value.CreateFunction("Shutdown", v8Handler), CefV8PropertyAttribute.None);
 			openraObj.SetValue("GetSequence", CefV8Value.CreateFunction("GetSequence", v8Handler), CefV8PropertyAttribute.None);
 
+			modObj.SetValue("GUI", CefV8Value.CreateString(Game.modData.Manifest.Mod.Id + "/gui/"), CefV8PropertyAttribute.ReadOnly);
+			modObj.SetValue("CSS", CefV8Value.CreateString(Game.modData.Manifest.Mod.Id + "/css/"), CefV8PropertyAttribute.ReadOnly);
+
 			openraObj.SetValue("Mod", modObj, CefV8PropertyAttribute.None);
 			windowObj.SetValue("OpenRA", openraObj, CefV8PropertyAttribute.None);
 			

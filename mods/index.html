@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<meta content="text/html;charset=utf-8" http-equiv="Content-Type"> <meta content="utf-8" http-equiv="encoding">
 		<script src="common/js/jquery-2.1.0.min.js"></script>
 		<script src="common/js/dummies/openra-dummy.js"></script>
 		<script>
 			$(document).ready(function () {
-				LoadDummy();
-				$("#main_container").load("cnc/gui/mainmenu.html");
-				$("#main_style").attr("href","cnc/css/style.css");
+				//LoadDummy();
+				$("#main_container").load(OpenRA.Mod.GUI + "mainmenu.html");
+				$("#main_style").attr("href",OpenRA.Mod.CSS + "style.css");
 			});
 		</script>
 		<link id="main_style" rel="stylesheet" />

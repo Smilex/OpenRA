@@ -34,9 +34,9 @@ namespace OpenRA.CEF
 
 					MemoryStream stream = new MemoryStream();
 					System.Drawing.Bitmap img = sprite.sheet.AsBitmap(sprite.channel, Game.worldRenderer.Palette("chrome").Palette, sprite.bounds);
-					img.Save(stream, ImageFormat.Png);
+					img.Save(stream, ImageFormat.Bmp);
 
-					string dataStr = "data:image/png;base64," + Convert.ToBase64String(stream.ToArray());
+					string dataStr = "data:image/bmp;base64," + Convert.ToBase64String(stream.ToArray());
 					returnValue = CefV8Value.CreateString(dataStr);
 					exception = null;
 					return true;
