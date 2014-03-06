@@ -2,8 +2,10 @@
 <html>
 	<head>
 		<script src="common/js/jquery-2.1.0.min.js"></script>
+		<script src="common/js/dummies/openra-dummy.js"></script>
 		<script>
 			$(document).ready(function () {
+				LoadDummy();
 				$("#main_container").load("cnc/gui/mainmenu.html");
 				$("#main_style").attr("href","cnc/css/style.css");
 			});
