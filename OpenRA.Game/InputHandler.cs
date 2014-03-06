@@ -42,6 +42,7 @@ namespace OpenRA
 
 		public void OnMouseInput(MouseInput input)
 		{
+			Graphics.Viewport.LastMousePos = input.Location;
 			Sync.CheckSyncUnchanged(world, () => Game.GUI.HandleMouseInput(input));
 		}
 	}

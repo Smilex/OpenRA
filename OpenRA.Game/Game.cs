@@ -112,7 +112,9 @@ namespace OpenRA
 				else
 					Renderer.BeginFrame(float2.Zero, 1f);
 
-				GUI.Render();	
+				GUI.Render();
+
+				CursorProvider.DrawCursor(Renderer, "default", Viewport.LastMousePos, (int)cursorFrame);
 
 				using (new PerfSample("render_flip"))
 				{
