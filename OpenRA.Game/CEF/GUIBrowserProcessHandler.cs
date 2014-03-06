@@ -40,7 +40,8 @@ namespace OpenRA.CEF
 			var directoryPath = Path.GetDirectoryName(location);
 
 			browser = CefBrowserHost.CreateBrowserSync(windowInfo, client, browserSettings);
-			browser.GetMainFrame().LoadUrl("file:///" + directoryPath + "/mods/cnc/gui/mainmenu.html");
+			//browser.GetMainFrame().LoadUrl("file:///" + directoryPath + "/mods/cnc/gui/mainmenu.html");
+			browser.GetMainFrame().LoadUrl("file:///" + directoryPath + "/mods/index.html");
 		}
 	}
 }

@@ -1,10 +1,4 @@
-<!DOCTYPE html>
-<html>
-	<head>
-	</head>
-
-	<body>
-		<link rel="stylesheet" href="style.css">
+<div>
 		<img id="refinery" src="" />
 		<img id="power" src="" />
 		<img id="barracks" src="" />
@@ -26,12 +20,11 @@
 			</div>
 		</div>
 		<script>
-			window.onload = function () {
+			$(document).ready(function () {
 				//alert(OpenRA.GetSequence("e1", "idle1", 0));
 				//document.getElementById("refinery").src = OpenRA.GetSequence("proc", "icon", 0);
 				document.getElementById("power").src = OpenRA.GetSequence("powr", "icon", 0);
 				document.getElementById("barracks").src = OpenRA.GetSequence("barr", "icon", 0);
-			}
+			});
 		</script>
-	</body>
-</html>
+</div>
