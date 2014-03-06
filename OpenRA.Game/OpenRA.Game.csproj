@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -59,6 +59,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -84,6 +85,14 @@
     <Compile Include="Actor.cs" />
     <Compile Include="ActorInitializer.cs" />
     <Compile Include="ActorReference.cs" />
+    <Compile Include="CEF\GUIApp.cs" />
+    <Compile Include="CEF\GUIBrowserProcessHandler.cs" />
+    <Compile Include="CEF\GUIClient.cs" />
+    <Compile Include="CEF\GUILoadHandler.cs" />
+    <Compile Include="CEF\GUIRenderHandler.cs" />
+    <Compile Include="CEF\GUIRenderProcessHandler.cs" />
+    <Compile Include="CEF\SHPResourceHandler.cs" />
+    <Compile Include="CEF\GUIV8Handler.cs" />
     <Compile Include="Graphics\QuadRenderer.cs" />
     <Compile Include="Download.cs" />
     <Compile Include="Effects\DelayedAction.cs" />
@@ -179,40 +188,11 @@
     <Compile Include="Traits\World\ResourceType.cs" />
     <Compile Include="Traits\World\ScreenShaker.cs" />
     <Compile Include="Traits\World\Shroud.cs" />
-    <Compile Include="Widgets\BackgroundWidget.cs" />
-    <Compile Include="Widgets\ButtonWidget.cs" />
-    <Compile Include="Widgets\ChatDisplayWidget.cs" />
-    <Compile Include="Widgets\CheckboxWidget.cs" />
-    <Compile Include="Widgets\ChromeMetrics.cs" />
-    <Compile Include="Widgets\ColorBlockWidget.cs" />
-    <Compile Include="Widgets\DropDownButtonWidget.cs" />
-    <Compile Include="Widgets\GridLayout.cs" />
-    <Compile Include="Widgets\ImageWidget.cs" />
-    <Compile Include="Widgets\LabelWidget.cs" />
-    <Compile Include="Widgets\LineGraphWidget.cs" />
-    <Compile Include="Widgets\ListLayout.cs" />
-    <Compile Include="Widgets\MapPreviewWidget.cs" />
-    <Compile Include="Widgets\PasswordFieldWidget.cs" />
-    <Compile Include="Widgets\PerfGraphWidget.cs" />
-    <Compile Include="Widgets\ProgressBarWidget.cs" />
-    <Compile Include="Widgets\ScrollItemWidget.cs" />
-    <Compile Include="Widgets\ScrollPanelWidget.cs" />
-    <Compile Include="Widgets\ShpImageWidget.cs" />
-    <Compile Include="Widgets\SliderWidget.cs" />
-    <Compile Include="Widgets\TextFieldWidget.cs" />
-    <Compile Include="Widgets\TimerWidget.cs" />
-    <Compile Include="Widgets\VqaPlayerWidget.cs" />
-    <Compile Include="Widgets\Widget.cs" />
-    <Compile Include="Widgets\WidgetLoader.cs" />
-    <Compile Include="Widgets\WidgetUtils.cs" />
-    <Compile Include="Widgets\WorldInteractionControllerWidget.cs" />
     <Compile Include="World.cs" />
     <Compile Include="WorldUtils.cs" />
     <Compile Include="Network\ReplayRecorderConnection.cs" />
-    <Compile Include="Widgets\TooltipContainerWidget.cs" />
     <Compile Include="Traits\DebugPauseState.cs" />
     <Compile Include="Network\UPnP.cs" />
-    <Compile Include="Widgets\ClientTooltipRegionWidget.cs" />
     <Compile Include="Graphics\Renderable.cs" />
     <Compile Include="Traits\Render\RenderSprites.cs" />
     <Compile Include="Graphics\Voxel.cs" />
@@ -225,20 +205,22 @@
     <Compile Include="Graphics\TextRenderable.cs" />
     <Compile Include="Graphics\BeamRenderable.cs" />
     <Compile Include="Graphics\ContrailRenderable.cs" />
-    <Compile Include="Widgets\ViewportControllerWidget.cs" />
     <Compile Include="Traits\Player\FrozenActorLayer.cs" />
     <Compile Include="Graphics\Theater.cs" />
     <Compile Include="Traits\Player\PlayerColorPalette.cs" />
     <Compile Include="Traits\Player\PlayerHighlightPalette.cs" />
     <Compile Include="Traits\World\ScreenMap.cs" />
     <Compile Include="Traits\World\ActorMap.cs" />
-    <Compile Include="Widgets\HotkeyEntryWidget.cs" />
     <Compile Include="Effects\MoveFlash.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OpenRA.FileFormats\OpenRA.FileFormats.csproj">
       <Project>{BDAEAB25-991E-46A7-AF1E-4F0E03358DAA}</Project>
       <Name>OpenRA.FileFormats</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xilium.CefGlue\CefGlue.csproj">
+      <Project>{703ff300-34b9-48d4-a5d6-e741f48d5f95}</Project>
+      <Name>CefGlue</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
