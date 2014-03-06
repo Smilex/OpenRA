@@ -83,8 +83,8 @@ namespace OpenRA.Renderer.SdlCommon
 
 		public void SetData(IntPtr buffer, int width, int height)
 		{
-			if (!Exts.IsPowerOf2(width) || !Exts.IsPowerOf2(height))
-				throw new InvalidDataException("Non-power-of-two array {0}x{1}".F(width, height));
+			//if (!Exts.IsPowerOf2(width) || !Exts.IsPowerOf2(height))
+			//	throw new InvalidDataException("Non-power-of-two array {0}x{1}".F(width, height));
 
 			size = new Size(width, height);
 			PrepareTexture();
