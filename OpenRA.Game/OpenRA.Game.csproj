@@ -88,6 +88,7 @@
     <Compile Include="CEF\GUIApp.cs" />
     <Compile Include="CEF\GUIBrowserProcessHandler.cs" />
     <Compile Include="CEF\GUIClient.cs" />
+    <Compile Include="CEF\GUILifeSpanHandler.cs" />
     <Compile Include="CEF\GUILoadHandler.cs" />
     <Compile Include="CEF\GUIRenderHandler.cs" />
     <Compile Include="CEF\GUIRenderProcessHandler.cs" />

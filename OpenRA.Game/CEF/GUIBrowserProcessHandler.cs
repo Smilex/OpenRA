@@ -29,7 +29,7 @@ namespace OpenRA.CEF
 
 		public void Shutdown()
 		{
-			browser.GetHost().CloseBrowser();
+			browser.GetHost().CloseBrowser(false);
 		}
 
 		protected override void OnContextInitialized()
