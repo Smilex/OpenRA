@@ -33,7 +33,7 @@ namespace OpenRA
 		public static ModData modData;
 		public static Settings Settings;
 		public static WorldRenderer worldRenderer;
-		public static GUIClient GUI;
+		public static GUIApp GUI;
 
 		internal static OrderManager orderManager;
 		static Server.Server server;
@@ -361,7 +361,7 @@ namespace OpenRA
 			else
 			{
 
-				GUI = new GUIClient(Renderer.Device.WindowSize.Width, Renderer.Device.WindowSize.Height);
+				GUI = new GUIApp(Renderer.Device.WindowSize.Width, Renderer.Device.WindowSize.Height);
 				GUI.Initialize();
 
 				modData.LoadScreen.StartGame();
