@@ -10,7 +10,7 @@ namespace OpenRA.CEF
 	{
 		protected override void OnContextInitialized()
 		{
-			CefRuntime.RegisterSchemeHandlerFactory("openra", "openra", new GUISchemeHandlerFactory());
+			CefRuntime.RegisterSchemeHandlerFactory("openra", "shp", new SHPHandlerFactory());
 		}
 	}
 }

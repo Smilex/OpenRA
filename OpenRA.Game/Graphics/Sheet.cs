@@ -135,6 +135,35 @@ namespace OpenRA.Graphics
 			return b;
 		}
 
+		public Bitmap AsBitmap(TextureChannel channel, Palette pal, Rectangle rect)
+		{
+			var d = Data;
+			var b = new Bitmap(rect.Width, rect.Height);
+			var output = b.LockBits(new Rectangle(0, 0, rect.Width, rect.Height),
+				ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+
+			unsafe
+			{
+				int* c = (int*)output.Scan0;
+
+				var iterX = rect.Left;
+				for (var x = 0; x < rect.Width; x++)
+				{
+					var iterY = rect.Top;
+					for (var y = 0; y < rect.Height; y++)
+					{
+						var index = d[4 * Size.Width * iterY + 4 * iterX + (int)channel];
+						iterY++;
+						*(c + (y * output.Stride >> 2) + x) = pal.GetColor(index).ToArgb();
+					}
+					iterX++;
+				}
+			}
+			b.UnlockBits(output);
+
+			return b;
+		}
+
 		public void CommitData()
 		{
 			if (data == null)

@@ -129,10 +129,10 @@ namespace OpenRA.CEF
 
 		internal class GUIRequestHandler : CefRequestHandler
 		{
-			GUIResourceHandler resHandler;
+			SHPResourceHandler resHandler;
 			public GUIRequestHandler()
 			{
-				resHandler = new GUIResourceHandler();
+				resHandler = new SHPResourceHandler();
 			}
 			protected override CefResourceHandler GetResourceHandler(CefBrowser browser, CefFrame frame, CefRequest request)
 			{

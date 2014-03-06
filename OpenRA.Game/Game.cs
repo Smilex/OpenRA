@@ -32,7 +32,7 @@ namespace OpenRA
 
 		public static ModData modData;
 		public static Settings Settings;
-		static WorldRenderer worldRenderer;
+		public static WorldRenderer worldRenderer;
 		public static GUIClient GUI;
 
 		internal static OrderManager orderManager;

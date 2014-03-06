@@ -9,16 +9,16 @@ using Xilium.CefGlue;
 
 namespace OpenRA.CEF
 {
-	class GUISchemeHandlerFactory : CefSchemeHandlerFactory
+	class SHPHandlerFactory : CefSchemeHandlerFactory
 	{
 
 		protected override CefResourceHandler Create(CefBrowser browser, CefFrame frame, string schemeName, CefRequest request)
 		{
-			return new GUIResourceHandler();
+			return new SHPResourceHandler();
 		}
 	}
 
-	class GUIResourceHandler : CefResourceHandler
+	class SHPResourceHandler : CefResourceHandler
 	{
 		private byte[] data;
 		private string dataType;
