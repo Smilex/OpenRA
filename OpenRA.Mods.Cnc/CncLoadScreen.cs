@@ -127,17 +127,17 @@ namespace OpenRA.Mods.Cnc
 		void TestAndContinue()
 		{
 			//Ui.ResetAll();
-			if (!loadInfo["TestFiles"].Split(',').All(f => FileSystem.Exists(f.Trim())))
+			/*if (!loadInfo["TestFiles"].Split(',').All(f => FileSystem.Exists(f.Trim())))
 			{
-				/*var args = new WidgetArgs()
+				var args = new WidgetArgs()
 				{
 					{ "continueLoading", () => TestAndContinue() },
 					{ "installData", loadInfo }
 				};
 				Ui.LoadWidget(loadInfo["InstallerBackgroundWidget"], Ui.Root, args);
-				Ui.OpenWindow(loadInfo["InstallerMenuWidget"], args);*/
+				Ui.OpenWindow(loadInfo["InstallerMenuWidget"], args);
 			}
-			else
+			else*/
 				Game.LoadShellMap();
 		}
 	}
