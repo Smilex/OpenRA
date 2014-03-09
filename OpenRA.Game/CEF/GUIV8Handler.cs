@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Drawing.Imaging;
-using System.Windows.Media.Imaging;
 using Xilium.CefGlue;
 
 namespace OpenRA.CEF
