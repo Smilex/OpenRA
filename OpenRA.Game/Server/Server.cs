@@ -44,6 +44,11 @@ namespace OpenRA.Server
 		Dedicated = 2
 	}
 
+	public class ServerConnection {
+		public uint connection;
+		public uint pollGroup;
+	}
+
 	public sealed class Server
 	{
 		public readonly MersenneTwister Random = new MersenneTwister();
@@ -65,9 +70,10 @@ namespace OpenRA.Server
 		public int OrderLatency = 1;
 
 		readonly int randomSeed;
+		NetworkingUtils utils;
 		NetworkingSockets netServer;
 		readonly List<uint> listeners = new List<uint>();
-		readonly List<uint> pollGroups = new List<uint>();
+		readonly List<ServerConnection> connections = new List<ServerConnection>();
 		readonly TypeDictionary serverTraits = new TypeDictionary();
 		readonly PlayerDatabase playerDatabase;
 
@@ -151,6 +157,8 @@ namespace OpenRA.Server
 
 		[TranslationReference]
 		public static readonly string GameStarted = "game-started";
+
+		StatusCallback statusCallback;
 
 		public ServerState State
 		{
@@ -237,7 +245,59 @@ namespace OpenRA.Server
 		{
 			Log.AddChannel("server", "server.log", true);
 
+			utils = new NetworkingUtils();
 			netServer = new NetworkingSockets();
+
+			statusCallback = (ref StatusInfo info) =>
+			{
+				switch (info.connectionInfo.state)
+				{
+					case Valve.Sockets.ConnectionState.None:
+						break;
+
+					case Valve.Sockets.ConnectionState.Connecting:
+						netServer.AcceptConnection(info.connection);
+						uint pollGroup = netServer.CreatePollGroup();
+						netServer.SetConnectionPollGroup(pollGroup, info.connection);
+
+						var conn = new ServerConnection();
+						conn.connection = info.connection;
+						conn.pollGroup = pollGroup;
+
+						connections.Add(conn);
+
+						events.Add(new ConnectionConnectEvent(netServer, conn));
+
+						break;
+
+					case Valve.Sockets.ConnectionState.Connected:
+						Console.WriteLine("Client connected - ID: " + info.connection + ", IP: " + info.connectionInfo.address.GetIP());
+						
+						break;
+
+					case Valve.Sockets.ConnectionState.ClosedByPeer:
+					case Valve.Sockets.ConnectionState.ProblemDetectedLocally:
+						for (int i = 0; i < connections.Count; ++i)
+						{
+							if (connections[i].connection == info.connection)
+							{
+								connections.Remove(connections[i]);
+								break;
+							}
+						}
+						netServer.CloseConnection(info.connection);
+
+						Console.WriteLine("Client disconnected - ID: " + info.connection + ", IP: " + info.connectionInfo.address.GetIP());
+						break;
+				}
+			};
+
+			DebugCallback debug = (t, message) => {
+				Console.WriteLine("Server Debug - Type: " + t + ", Message: " + message);
+			};
+
+			utils.SetStatusCallback(statusCallback);
+			utils.SetDebugCallback(DebugType.Everything, debug);
 
 			foreach (var endpoint in endpoints)
 			{
@@ -245,59 +305,11 @@ namespace OpenRA.Server
 				address.SetAddress(endpoint.Address.ToString(), (ushort)endpoint.Port);
 
 				uint listenSocket = netServer.CreateListenSocket(ref address);
-				var listener = new TcpListener(endpoint);
-				try
-				{
-					try
-					{
-						listener.Server.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, 1);
-					}
-					catch (Exception ex)
-					{
-						if (ex is SocketException || ex is ArgumentException)
-							Log.Write("server", $"Failed to set socket option on {endpoint}: {ex.Message}");
-						else
-							throw;
-					}
-
-					listener.Start();
-					listeners.Add(listener);
-
-					new Thread(() =>
-					{
-						while (true)
-						{
-							if (State != ServerState.WaitingPlayers)
-							{
-								listener.Stop();
-								return;
-							}
-
-							// Use a 1s timeout so we can stop listening once the game starts
-							if (listener.Server.Poll(1000000, SelectMode.SelectRead))
-							{
-								try
-								{
-									events.Add(new ConnectionConnectEvent(listener.AcceptSocket()));
-								}
-								catch (Exception)
-								{
-									// Ignore the exception that may be generated if the connection
-									// drops while we are trying to connect
-								}
-							}
-						}
-					}) { Name = $"Connection listener ({listener.LocalEndpoint})", IsBackground = true }.Start();
-				}
-				catch (SocketException ex)
-				{
-					lastException = ex;
-					Log.Write("server", $"Failed to listen on {endpoint}: {ex.Message}");
-				}
+				listeners.Add(listenSocket);
 			}
 
 			if (listeners.Count == 0)
-				throw lastException;
+				throw new ArgumentOutOfRangeException();
 
 			Type = type;
 			Settings = settings;
@@ -364,6 +376,7 @@ namespace OpenRA.Server
 				{
 					if (State != ServerState.ShuttingDown)
 					{
+						netServer.RunCallbacks();
 						if (events.TryTake(out var e, 1000))
 							e.Invoke(this);
 
@@ -425,7 +438,7 @@ namespace OpenRA.Server
 			events.Add(new ConnectionDisconnectEvent(conn));
 		}
 
-		void AcceptConnection(Socket socket)
+		void AcceptConnection(NetworkingSockets netServer, ServerConnection conn)
 		{
 			if (State != ServerState.WaitingPlayers)
 				return;
@@ -434,7 +447,7 @@ namespace OpenRA.Server
 			// which we can then verify against the player public key database
 			var token = Convert.ToBase64String(OpenRA.Exts.MakeArray(256, _ => (byte)Random.Next()));
 
-			var newConn = new Connection(this, socket, token);
+			var newConn = new Connection(this, netServer, conn, token);
 			try
 			{
 				// Send handshake and client index.
@@ -489,13 +502,14 @@ namespace OpenRA.Server
 					return;
 				}
 
-				var ipAddress = ((IPEndPoint)newConn.EndPoint).Address;
+				var ipAddress = newConn.EndPoint.Address;
+				var ipAddr = IPAddress.Parse(ipAddress);
 				var client = new Session.Client
 				{
 					Name = OpenRA.Settings.SanitizedPlayerName(handshake.Client.Name),
 					IPAddress = ipAddress.ToString(),
-					AnonymizedIPAddress = Type != ServerType.Local && Settings.ShareAnonymizedIPs ? Session.AnonymizeIP(ipAddress) : null,
-					Location = GeoIP.LookupCountry(ipAddress),
+					AnonymizedIPAddress = Type != ServerType.Local && Settings.ShareAnonymizedIPs ? Session.AnonymizeIP(ipAddr) : null,
+					Location = GeoIP.LookupCountry(ipAddr),
 					Index = newConn.PlayerIndex,
 					PreferredColor = handshake.Client.PreferredColor,
 					Color = handshake.Client.Color,
@@ -1422,7 +1436,11 @@ namespace OpenRA.Server
 			var endpoints = new List<DnsEndPoint>();
 			foreach (var listener in listeners)
 			{
-				var endpoint = (IPEndPoint)listener.LocalEndpoint;
+				var address = new Address();
+				netServer.GetListenSocketAddress(listener, ref address);
+				String ip = address.GetIP();
+				ushort port = address.port;
+				var endpoint = new IPEndPoint(IPAddress.Parse(ip), port);
 				if (IPAddress.IPv6Any.Equals(endpoint.Address))
 					endpoints.Add(new DnsEndPoint(IPAddress.IPv6Loopback.ToString(), endpoint.Port));
 				else if (IPAddress.Any.Equals(endpoint.Address))
@@ -1438,15 +1456,17 @@ namespace OpenRA.Server
 
 		class ConnectionConnectEvent : IServerEvent
 		{
-			readonly Socket socket;
-			public ConnectionConnectEvent(Socket socket)
+			readonly NetworkingSockets netServer;
+			readonly ServerConnection conn;
+			public ConnectionConnectEvent(NetworkingSockets netServer, ServerConnection conn)
 			{
-				this.socket = socket;
+				this.netServer = netServer;
+				this.conn = conn;
 			}
 
 			void IServerEvent.Invoke(Server server)
 			{
-				server.AcceptConnection(socket);
+				server.AcceptConnection(netServer, conn);
 			}
 		}
 

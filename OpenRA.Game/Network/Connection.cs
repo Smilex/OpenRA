@@ -18,6 +18,7 @@ using System.Threading;
 using System.Net;
 using OpenRA.Server;
 using Valve.Sockets;
+using System.Runtime.InteropServices;
 
 namespace OpenRA.Network
 {
@@ -118,7 +119,8 @@ namespace OpenRA.Network
 		readonly Queue<OrderPacket> sentImmediateOrders = new Queue<OrderPacket>();
 		readonly ConcurrentQueue<(int FromClient, byte[] Data)> receivedPackets = new ConcurrentQueue<(int, byte[])>();
 		NetworkingSockets client;
-		Queue<uint> connections;
+		NetworkingUtils utils;
+		uint connection;
 		EndPoint endpoint;
 
 		const int maxNetMessages = 20;
@@ -128,10 +130,12 @@ namespace OpenRA.Network
 		volatile int clientId;
 		bool disposed;
 		string errorMessage;
+		bool connected = false;
 
 		public NetworkConnection(ConnectionTarget target)
 		{
 			client = new NetworkingSockets();
+
 			netMessages = new NetworkingMessage[maxNetMessages];
 			Target = target;
 			new Thread(NetworkConnectionConnect)
@@ -194,16 +198,18 @@ namespace OpenRA.Network
 			else if (queue.TryTake(out conn, 5000))
 			{
 				// Copy endpoint here to have it even after getting disconnected.
-				Address address = new Address();
-				client.GetListenSocketAddress(conn, ref address);
-				endpoint = new EndPoint(address);
-				connections.Append(conn);
+				//Address address = new Address();
+				//client.GetListenSocketAddress(conn, ref address);
+				ConnectionInfo info = new ConnectionInfo();
+				client.GetConnectionInfo(conn, ref info);
+				endpoint = new EndPoint(info.address);
+				connection = conn;
 
 				new Thread(NetworkConnectionReceive)
 				{
-					Name = $"{GetType().Name} (receive from {address.GetIP()})",
+					Name = $"{GetType().Name} (receive from {info.address.GetIP()})",
 					IsBackground = true
-				}.Start(conn);
+				}.Start();
 			}
 			else
 			{
@@ -214,56 +220,66 @@ namespace OpenRA.Network
 			queue.CompleteAdding();
 			foreach (var c in queue)
 				client.CloseConnection(c);
+
+			while (!connected)
+			{
+				client.RunCallbacks();
+				Thread.Sleep(30);
+			}
 		}
 
-		void NetworkConnectionReceive(object connectionObject)
+		void NetworkConnectionReceive()
 		{
-			uint connection = (uint)connectionObject;
 			while (true) {
 				client.RunCallbacks();
 				int netMessagesCount = client.ReceiveMessagesOnConnection(connection, netMessages, maxNetMessages);
 
 				if (netMessagesCount > 0) {
-					for (int i = 0; i < netMessagesCount; i++) {
+					var stream = new MemoryStream();
+					for (int i = 0; i < netMessagesCount; i++)
+					{
 						ref NetworkingMessage netMessage = ref netMessages[i];
 
 						Console.WriteLine("Message received from server - Channel ID: " + netMessage.channel + ", Data length: " + netMessage.length);
 
 						IntPtr data = netMessage.data;
-						unsafe {
-							try {
-								var stream = new UnmanagedMemoryStream((byte*)data.ToPointer(), netMessage.length);
-
-								var handshakeProtocol = stream.ReadInt32();
-
-								if (handshakeProtocol != ProtocolVersion.Handshake)
-									throw new InvalidOperationException($"Handshake protocol version mismatch. Server={handshakeProtocol} Client={ProtocolVersion.Handshake}");
-
-								clientId = stream.ReadInt32();
-								connectionState = ConnectionState.Connected;
-
-								while (stream.CanRead)
-								{
-									var len = stream.ReadInt32();
-									var client = stream.ReadInt32();
-									var buf = stream.ReadBytes(len);
-									if (len == 0)
-										throw new NotImplementedException();
-									receivedPackets.Enqueue((client, buf));
-								}
-							}
-							catch (Exception ex)
-							{
-								errorMessage = "Connection failed";
-								Log.Write("client", $"Connection to {endpoint} failed: {ex.Message}");
-							}
-							finally
-							{
-								connectionState = ConnectionState.NotConnected;
-							}
+						unsafe
+						{
+							byte[] bytes = new byte[netMessage.length];
+							Marshal.Copy(data, bytes, 0, netMessage.length);
+							stream.Write(bytes, 0, netMessage.length);
 						}
 
 						netMessage.Destroy();
+					}
+					stream.Position = 0;
+					try {
+						var handshakeProtocol = stream.ReadInt32();
+
+						if (handshakeProtocol != ProtocolVersion.Handshake)
+							throw new InvalidOperationException($"Handshake protocol version mismatch. Server={handshakeProtocol} Client={ProtocolVersion.Handshake}");
+
+						clientId = stream.ReadInt32();
+						connectionState = ConnectionState.Connected;
+
+						while (stream.Position < stream.Length)
+						{
+							var len = stream.ReadInt32();
+							var client = stream.ReadInt32();
+							var buf = stream.ReadBytes(len);
+							if (len == 0)
+								throw new NotImplementedException();
+							receivedPackets.Enqueue((client, buf));
+						}
+					}
+					catch (Exception ex)
+					{
+						errorMessage = "Connection failed";
+						Log.Write("client", $"Connection to {endpoint} failed: {ex.Message}");
+					}
+					finally
+					{
+						connectionState = ConnectionState.NotConnected;
 					}
 				}
 			}
@@ -427,6 +443,7 @@ namespace OpenRA.Network
 			// Closing the stream will cause any reads on the receiving thread to throw.
 			// This will mark the connection as no longer connected and the thread will terminate cleanly.
 			client.CloseConnection(connection);
+			
 
 			Recorder?.Dispose();
 		}

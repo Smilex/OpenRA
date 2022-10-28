@@ -15,9 +15,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Threading;
+using OpenRA.Network;
+using Valve.Sockets;
 
 namespace OpenRA.Server
 {
@@ -44,17 +44,25 @@ namespace OpenRA.Server
 		readonly BlockingCollection<byte[]> sendQueue = new BlockingCollection<byte[]>();
 		readonly Queue<int> pingHistory = new Queue<int>();
 
-		public Connection(Server server, Socket socket, string authToken)
+		const int maxMessages = 20;
+
+		NetworkingMessage[] netMessages;
+
+		public Connection(Server server, NetworkingSockets netServer, ServerConnection conn, string authToken)
 		{
 			PlayerIndex = server.ChooseFreePlayerIndex();
 			AuthToken = authToken;
-			EndPoint = socket.RemoteEndPoint;
+			ConnectionInfo info = new ConnectionInfo();
+			netServer.GetConnectionInfo(conn.connection, ref info);
+			EndPoint = new Network.EndPoint(info.address);
+
+			netMessages = new NetworkingMessage[maxMessages];
 
 			new Thread(SendReceiveLoop)
 			{
 				Name = $"Client communication ({EndPoint}",
 				IsBackground = true
-			}.Start((server, socket));
+			}.Start((server, netServer, conn));
 		}
 
 		static byte[] CreatePingFrame()
@@ -70,11 +78,8 @@ namespace OpenRA.Server
 
 		void SendReceiveLoop(object s)
 		{
-			var (server, socket) = (ValueTuple<Server, Socket>)s;
-			socket.Blocking = false;
-			socket.NoDelay = true;
+			var (server, netServer, conn) = (ValueTuple<Server, NetworkingSockets, ServerConnection>)s;
 
-			var receiveBuffer = new byte[1024];
 			var readBuffer = new List<byte>();
 			var state = ReceiveState.Header;
 			var expectLength = 8;
@@ -85,22 +90,28 @@ namespace OpenRA.Server
 			{
 				while (true)
 				{
-					// Wait up to 100ms for data to arrive before checking for data to send
-					if (socket.Poll(100000, SelectMode.SelectRead))
+
+					int netMessagesCount = netServer.ReceiveMessagesOnPollGroup(conn.pollGroup, netMessages, maxMessages);
+					if (netMessagesCount > 0)
 					{
-						var read = socket.Receive(receiveBuffer);
-						if (read == 0)
+						for (int i = 0; i < netMessagesCount; i++)
 						{
-							// Empty packet signals that the client has been dropped
-							return;
+							ref NetworkingMessage netMessage = ref netMessages[i];
+
+							Console.WriteLine("Message received from - ID: " + netMessage.connection + ", Channel ID: " + netMessage.channel + ", Data length: " + netMessage.length);
+
+							unsafe
+							{
+								var data = netMessage.data;
+								var stream = new UnmanagedMemoryStream((byte*)data.ToPointer(), netMessage.length);
+								readBuffer.AddRange(stream.ReadBytes(netMessage.length));
+							}
+
+							netMessage.Destroy();
 						}
 
-						if (read > 0)
-						{
-							readBuffer.AddRange(receiveBuffer.Take(read));
-							lastReceivedTime = Game.RunTime;
-							TimeoutMessageShown = false;
-						}
+						lastReceivedTime = Game.RunTime;
+						TimeoutMessageShown = false;
 
 						while (readBuffer.Count >= expectLength)
 						{
@@ -110,40 +121,40 @@ namespace OpenRA.Server
 							switch (state)
 							{
 								case ReceiveState.Header:
-								{
-									expectLength = BitConverter.ToInt32(bytes, 0) - 4;
-									frame = BitConverter.ToInt32(bytes, 4);
-									state = ReceiveState.Data;
-
-									if (expectLength < 0 || expectLength > MaxOrderLength)
 									{
-										Log.Write("server", $"Closing socket connection to {EndPoint} because of excessive order length: {expectLength}");
-										return;
-									}
+										expectLength = BitConverter.ToInt32(bytes, 0) - 4;
+										frame = BitConverter.ToInt32(bytes, 4);
+										state = ReceiveState.Data;
 
-									break;
-								}
+										if (expectLength < 0 || expectLength > MaxOrderLength)
+										{
+											Log.Write("server", $"Closing socket connection to {EndPoint} because of excessive order length: {expectLength}");
+											return;
+										}
+
+										break;
+									}
 
 								case ReceiveState.Data:
-								{
-									// Ping packets are sent and processed internally within this thread to reduce
-									// server-introduced latencies from polling loops
-									if (expectLength == 10 && bytes[0] == (byte)OrderType.Ping)
 									{
-										if (pingHistory.Count == MaxPingSamples)
-											pingHistory.Dequeue();
+										// Ping packets are sent and processed internally within this thread to reduce
+										// server-introduced latencies from polling loops
+										if (expectLength == 10 && bytes[0] == (byte)OrderType.Ping)
+										{
+											if (pingHistory.Count == MaxPingSamples)
+												pingHistory.Dequeue();
 
-										pingHistory.Enqueue((int)(Game.RunTime - BitConverter.ToInt64(bytes, 1)));
-										server.OnConnectionPing(this, pingHistory.ToArray(), bytes[9]);
+											pingHistory.Enqueue((int)(Game.RunTime - BitConverter.ToInt64(bytes, 1)));
+											server.OnConnectionPing(this, pingHistory.ToArray(), bytes[9]);
+										}
+										else
+											server.OnConnectionPacket(this, frame, bytes);
+
+										expectLength = 8;
+										state = ReceiveState.Header;
+
+										break;
 									}
-									else
-										server.OnConnectionPacket(this, frame, bytes);
-
-									expectLength = 8;
-									state = ReceiveState.Header;
-
-									break;
-								}
 							}
 						}
 					}
@@ -160,36 +171,15 @@ namespace OpenRA.Server
 					// Send all data immediately, we will block again on read
 					while (sendQueue.TryTake(out var data, 0))
 					{
-						var start = 0;
-						var length = data.Length;
-
-						// Non-blocking sends are free to send only part of the data
-						while (start < length)
-						{
-							var sent = socket.Send(data, start, length - start, SocketFlags.None, out var error);
-							if (error == SocketError.WouldBlock)
-							{
-								Log.Write("server", $"Non-blocking send of {length - start} bytes failed. Falling back to blocking send.");
-								socket.Blocking = true;
-								sent = socket.Send(data, start, length - start, SocketFlags.None);
-								socket.Blocking = false;
-							}
-							else if (error != SocketError.Success)
-								throw new SocketException((int)error);
-
-							start += sent;
-						}
+						netServer.SendMessageToConnection(conn.connection, data);
 					}
+
+					Thread.Sleep(15);
 				}
-			}
-			catch (SocketException e)
-			{
-				Log.Write("server", $"Closing socket connection to {EndPoint} because of socket error: {e}");
 			}
 			finally
 			{
 				server.OnConnectionDisconnect(this);
-				socket.Dispose();
 			}
 		}
 
