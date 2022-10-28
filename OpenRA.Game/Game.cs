@@ -310,6 +310,7 @@ namespace OpenRA
 
 		static void Initialize(Arguments args)
 		{
+			Valve.Sockets.Library.Initialize();
 			var engineDirArg = args.GetValue("Engine.EngineDir", null);
 			if (!string.IsNullOrEmpty(engineDirArg))
 				Platform.OverrideEngineDir(engineDirArg);
@@ -887,6 +888,8 @@ namespace OpenRA
 
 			Sound.Dispose();
 			Renderer.Dispose();
+
+			Valve.Sockets.Library.Deinitialize();
 
 			OnQuit();
 

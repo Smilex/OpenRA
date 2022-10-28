@@ -17,7 +17,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
+using Valve.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,7 +65,9 @@ namespace OpenRA.Server
 		public int OrderLatency = 1;
 
 		readonly int randomSeed;
-		readonly List<TcpListener> listeners = new List<TcpListener>();
+		NetworkingSockets netServer;
+		readonly List<uint> listeners = new List<uint>();
+		readonly List<uint> pollGroups = new List<uint>();
 		readonly TypeDictionary serverTraits = new TypeDictionary();
 		readonly PlayerDatabase playerDatabase;
 
@@ -235,9 +237,14 @@ namespace OpenRA.Server
 		{
 			Log.AddChannel("server", "server.log", true);
 
-			SocketException lastException = null;
+			netServer = new NetworkingSockets();
+
 			foreach (var endpoint in endpoints)
 			{
+				Address address = new Address();
+				address.SetAddress(endpoint.Address.ToString(), (ushort)endpoint.Port);
+
+				uint listenSocket = netServer.CreateListenSocket(ref address);
 				var listener = new TcpListener(endpoint);
 				try
 				{

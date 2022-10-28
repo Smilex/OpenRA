@@ -14,4 +14,11 @@
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Threading.Channels" Version="6.0.0" />
   </ItemGroup>
+  <ItemGroup>
+      <None Include="libGameNetworkingSockets.so">
+          <Pack>true</Pack>
+          <PackagePath>runtimes/linux-x64/native</PackagePath>
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+  </ItemGroup>
 </Project>

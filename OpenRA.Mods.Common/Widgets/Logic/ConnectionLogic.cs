@@ -186,7 +186,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 
 			switchButton.OnClick = () =>
 			{
-				var launchCommand = $"Launch.URI={new UriBuilder("tcp", connection.EndPoint.Address.ToString(), connection.EndPoint.Port)}";
+				var launchCommand = $"Launch.URI={new UriBuilder("tcp", connection.EndPoint.Address, connection.EndPoint.Port)}";
 				Game.SwitchToExternalMod(CurrentServerSettings.ServerExternalMod, new[] { launchCommand }, () =>
 				{
 					orderManager.ServerError = ModSwitchFailed;

@@ -14,13 +14,24 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Threading;
+using System.Net;
 using OpenRA.Server;
+using Valve.Sockets;
 
 namespace OpenRA.Network
 {
+    public class EndPoint {
+        Address address;
+        public EndPoint(Address address) {
+			this.address = address;
+        }
+
+		public String Address => address.GetIP();
+
+		public int Port => address.port;
+    }
+
 	public enum ConnectionState
 	{
 		PreConnecting,
@@ -106,8 +117,12 @@ namespace OpenRA.Network
 		readonly Queue<(int Frame, OrderPacket Orders)> sentOrders = new Queue<(int, OrderPacket)>();
 		readonly Queue<OrderPacket> sentImmediateOrders = new Queue<OrderPacket>();
 		readonly ConcurrentQueue<(int FromClient, byte[] Data)> receivedPackets = new ConcurrentQueue<(int, byte[])>();
-		TcpClient tcp;
-		IPEndPoint endpoint;
+		NetworkingSockets client;
+		Queue<uint> connections;
+		EndPoint endpoint;
+
+		const int maxNetMessages = 20;
+		NetworkingMessage[] netMessages;
 
 		volatile ConnectionState connectionState = ConnectionState.Connecting;
 		volatile int clientId;
@@ -116,6 +131,8 @@ namespace OpenRA.Network
 
 		public NetworkConnection(ConnectionTarget target)
 		{
+			client = new NetworkingSockets();
+			netMessages = new NetworkingMessage[maxNetMessages];
 			Target = target;
 			new Thread(NetworkConnectionConnect)
 			{
@@ -126,9 +143,10 @@ namespace OpenRA.Network
 
 		void NetworkConnectionConnect()
 		{
-			var queue = new BlockingCollection<TcpClient>();
+			var queue = new BlockingCollection<uint>();
 
 			var atLeastOneEndpoint = false;
+
 			foreach (var endpoint in Target.GetConnectEndPoints())
 			{
 				atLeastOneEndpoint = true;
@@ -136,17 +154,20 @@ namespace OpenRA.Network
 				{
 					try
 					{
-						var client = new TcpClient(endpoint.AddressFamily) { NoDelay = true };
-						client.Connect(endpoint.Address, endpoint.Port);
+						uint c = 0;
+						Address address = new Address();
+						address.SetAddress(endpoint.Address.ToString(), ((ushort)endpoint.Port));
+
+						c = client.Connect(ref address);
 
 						try
 						{
-							queue.Add(client);
+							queue.Add(c);
 						}
 						catch (InvalidOperationException)
 						{
 							// Another connection was faster, close this one.
-							client.Close();
+							client.CloseConnection(c);
 						}
 					}
 					catch (Exception ex)
@@ -161,6 +182,8 @@ namespace OpenRA.Network
 				}.Start();
 			}
 
+			uint conn = 0;
+
 			if (!atLeastOneEndpoint)
 			{
 				errorMessage = "Failed to resolve address";
@@ -168,16 +191,19 @@ namespace OpenRA.Network
 			}
 
 			// Wait up to 5s for a successful connection. This should hopefully be enough because such high latency makes the game unplayable anyway.
-			else if (queue.TryTake(out tcp, 5000))
+			else if (queue.TryTake(out conn, 5000))
 			{
 				// Copy endpoint here to have it even after getting disconnected.
-				endpoint = (IPEndPoint)tcp.Client.RemoteEndPoint;
+				Address address = new Address();
+				client.GetListenSocketAddress(conn, ref address);
+				endpoint = new EndPoint(address);
+				connections.Append(conn);
 
 				new Thread(NetworkConnectionReceive)
 				{
-					Name = $"{GetType().Name} (receive from {tcp.Client.RemoteEndPoint})",
+					Name = $"{GetType().Name} (receive from {address.GetIP()})",
 					IsBackground = true
-				}.Start();
+				}.Start(conn);
 			}
 			else
 			{
@@ -186,41 +212,60 @@ namespace OpenRA.Network
 
 			// Close all unneeded connections in the queue and make sure new ones are closed on the connect thread.
 			queue.CompleteAdding();
-			foreach (var client in queue)
-				client.Close();
+			foreach (var c in queue)
+				client.CloseConnection(c);
 		}
 
-		void NetworkConnectionReceive()
+		void NetworkConnectionReceive(object connectionObject)
 		{
-			try
-			{
-				var stream = tcp.GetStream();
-				var handshakeProtocol = stream.ReadInt32();
+			uint connection = (uint)connectionObject;
+			while (true) {
+				client.RunCallbacks();
+				int netMessagesCount = client.ReceiveMessagesOnConnection(connection, netMessages, maxNetMessages);
 
-				if (handshakeProtocol != ProtocolVersion.Handshake)
-					throw new InvalidOperationException($"Handshake protocol version mismatch. Server={handshakeProtocol} Client={ProtocolVersion.Handshake}");
+				if (netMessagesCount > 0) {
+					for (int i = 0; i < netMessagesCount; i++) {
+						ref NetworkingMessage netMessage = ref netMessages[i];
 
-				clientId = stream.ReadInt32();
-				connectionState = ConnectionState.Connected;
+						Console.WriteLine("Message received from server - Channel ID: " + netMessage.channel + ", Data length: " + netMessage.length);
 
-				while (true)
-				{
-					var len = stream.ReadInt32();
-					var client = stream.ReadInt32();
-					var buf = stream.ReadBytes(len);
-					if (len == 0)
-						throw new NotImplementedException();
-					receivedPackets.Enqueue((client, buf));
+						IntPtr data = netMessage.data;
+						unsafe {
+							try {
+								var stream = new UnmanagedMemoryStream((byte*)data.ToPointer(), netMessage.length);
+
+								var handshakeProtocol = stream.ReadInt32();
+
+								if (handshakeProtocol != ProtocolVersion.Handshake)
+									throw new InvalidOperationException($"Handshake protocol version mismatch. Server={handshakeProtocol} Client={ProtocolVersion.Handshake}");
+
+								clientId = stream.ReadInt32();
+								connectionState = ConnectionState.Connected;
+
+								while (stream.CanRead)
+								{
+									var len = stream.ReadInt32();
+									var client = stream.ReadInt32();
+									var buf = stream.ReadBytes(len);
+									if (len == 0)
+										throw new NotImplementedException();
+									receivedPackets.Enqueue((client, buf));
+								}
+							}
+							catch (Exception ex)
+							{
+								errorMessage = "Connection failed";
+								Log.Write("client", $"Connection to {endpoint} failed: {ex.Message}");
+							}
+							finally
+							{
+								connectionState = ConnectionState.NotConnected;
+							}
+						}
+
+						netMessage.Destroy();
+					}
 				}
-			}
-			catch (Exception ex)
-			{
-				errorMessage = "Connection failed";
-				Log.Write("client", $"Connection to {endpoint} failed: {ex.Message}");
-			}
-			finally
-			{
-				connectionState = ConnectionState.NotConnected;
 			}
 		}
 
@@ -271,10 +316,9 @@ namespace OpenRA.Network
 				}
 
 				queuedSyncPackets.Clear();
-				ms.WriteTo(tcp.GetStream());
+				client.SendMessageToConnection(connection, ms.GetBuffer());
 			}
-			catch (SocketException) { /* drop this on the floor; we'll pick up the disconnect from the reader thread */ }
-			catch (ObjectDisposedException) { /* ditto */ }
+			catch (ObjectDisposedException) { /* drop this on the floor; we'll pick up the disconnect from the reader thread */ }
 			catch (InvalidOperationException) { /* ditto */ }
 			catch (IOException) { /* ditto */ }
 		}
@@ -369,7 +413,7 @@ namespace OpenRA.Network
 
 		public ConnectionState ConnectionState => connectionState;
 
-		public IPEndPoint EndPoint => endpoint;
+		public EndPoint EndPoint => endpoint;
 
 		public string ErrorMessage => errorMessage;
 
@@ -382,7 +426,7 @@ namespace OpenRA.Network
 
 			// Closing the stream will cause any reads on the receiving thread to throw.
 			// This will mark the connection as no longer connected and the thread will terminate cleanly.
-			tcp?.Close();
+			client.CloseConnection(connection);
 
 			Recorder?.Dispose();
 		}
