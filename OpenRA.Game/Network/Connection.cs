@@ -198,16 +198,16 @@ namespace OpenRA.Network
 			else if (queue.TryTake(out conn, 5000))
 			{
 				// Copy endpoint here to have it even after getting disconnected.
-				//Address address = new Address();
-				//client.GetListenSocketAddress(conn, ref address);
-				ConnectionInfo info = new ConnectionInfo();
-				client.GetConnectionInfo(conn, ref info);
-				endpoint = new EndPoint(info.address);
+				Address address = new Address();
+				client.GetListenSocketAddress(conn, ref address);
+				//ConnectionInfo info = new ConnectionInfo();
+				//client.GetConnectionInfo(conn, ref info);
+				endpoint = new EndPoint(address);
 				connection = conn;
 
 				new Thread(NetworkConnectionReceive)
 				{
-					Name = $"{GetType().Name} (receive from {info.address.GetIP()})",
+					Name = $"{GetType().Name} (receive from {address.GetIP()})",
 					IsBackground = true
 				}.Start();
 			}
@@ -220,47 +220,47 @@ namespace OpenRA.Network
 			queue.CompleteAdding();
 			foreach (var c in queue)
 				client.CloseConnection(c);
-
-			while (!connected)
-			{
-				client.RunCallbacks();
-				Thread.Sleep(30);
-			}
 		}
 
 		void NetworkConnectionReceive()
 		{
-			while (true) {
-				client.RunCallbacks();
-				int netMessagesCount = client.ReceiveMessagesOnConnection(connection, netMessages, maxNetMessages);
+			bool hadHandshake = false;
+			try
+			{
+				while (true)
+				{
+					client.RunCallbacks();
+					int netMessagesCount = client.ReceiveMessagesOnConnection(connection, netMessages, maxNetMessages);
 
-				if (netMessagesCount > 0) {
-					var stream = new MemoryStream();
-					for (int i = 0; i < netMessagesCount; i++)
+					if (netMessagesCount > 0)
 					{
-						ref NetworkingMessage netMessage = ref netMessages[i];
-
-						Console.WriteLine("Message received from server - Channel ID: " + netMessage.channel + ", Data length: " + netMessage.length);
-
-						IntPtr data = netMessage.data;
-						unsafe
+						var stream = new MemoryStream();
+						for (int i = 0; i < netMessagesCount; i++)
 						{
+							ref NetworkingMessage netMessage = ref netMessages[i];
+
+							Console.WriteLine("Message received from server - Channel ID: " + netMessage.channel + ", Data length: " + netMessage.length);
+
 							byte[] bytes = new byte[netMessage.length];
-							Marshal.Copy(data, bytes, 0, netMessage.length);
+							netMessage.CopyTo(bytes);
 							stream.Write(bytes, 0, netMessage.length);
+
+							netMessage.Destroy();
 						}
 
-						netMessage.Destroy();
-					}
-					stream.Position = 0;
-					try {
-						var handshakeProtocol = stream.ReadInt32();
+						stream.Position = 0;
+						if (!hadHandshake)
+						{
+							var handshakeProtocol = stream.ReadInt32();
 
-						if (handshakeProtocol != ProtocolVersion.Handshake)
-							throw new InvalidOperationException($"Handshake protocol version mismatch. Server={handshakeProtocol} Client={ProtocolVersion.Handshake}");
+							if (handshakeProtocol != ProtocolVersion.Handshake)
+								throw new InvalidOperationException($"Handshake protocol version mismatch. Server={handshakeProtocol} Client={ProtocolVersion.Handshake}");
 
-						clientId = stream.ReadInt32();
-						connectionState = ConnectionState.Connected;
+							clientId = stream.ReadInt32();
+							connectionState = ConnectionState.Connected;
+
+							hadHandshake = true;
+						}
 
 						while (stream.Position < stream.Length)
 						{
@@ -271,17 +271,21 @@ namespace OpenRA.Network
 								throw new NotImplementedException();
 							receivedPackets.Enqueue((client, buf));
 						}
-					}
-					catch (Exception ex)
+
+					} else
 					{
-						errorMessage = "Connection failed";
-						Log.Write("client", $"Connection to {endpoint} failed: {ex.Message}");
-					}
-					finally
-					{
-						connectionState = ConnectionState.NotConnected;
+						Thread.Sleep(15);
 					}
 				}
+			}
+			catch (Exception ex)
+			{
+				errorMessage = "Connection failed";
+				Log.Write("client", $"Connection to {endpoint} failed: {ex.Message}");
+			}
+			finally
+			{
+				connectionState = ConnectionState.NotConnected;
 			}
 		}
 
@@ -332,7 +336,7 @@ namespace OpenRA.Network
 				}
 
 				queuedSyncPackets.Clear();
-				client.SendMessageToConnection(connection, ms.GetBuffer());
+				client.SendMessageToConnection(connection, ms.ToArray(), Valve.Sockets.SendFlags.Reliable);
 			}
 			catch (ObjectDisposedException) { /* drop this on the floor; we'll pick up the disconnect from the reader thread */ }
 			catch (InvalidOperationException) { /* ditto */ }

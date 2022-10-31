@@ -100,12 +100,9 @@ namespace OpenRA.Server
 
 							Console.WriteLine("Message received from - ID: " + netMessage.connection + ", Channel ID: " + netMessage.channel + ", Data length: " + netMessage.length);
 
-							unsafe
-							{
-								var data = netMessage.data;
-								var stream = new UnmanagedMemoryStream((byte*)data.ToPointer(), netMessage.length);
-								readBuffer.AddRange(stream.ReadBytes(netMessage.length));
-							}
+							byte[] msg = new byte[netMessage.length];
+							netMessage.CopyTo(msg);
+							readBuffer.AddRange(msg);
 
 							netMessage.Destroy();
 						}

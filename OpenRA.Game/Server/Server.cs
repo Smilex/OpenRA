@@ -256,17 +256,21 @@ namespace OpenRA.Server
 						break;
 
 					case Valve.Sockets.ConnectionState.Connecting:
-						netServer.AcceptConnection(info.connection);
-						uint pollGroup = netServer.CreatePollGroup();
-						netServer.SetConnectionPollGroup(pollGroup, info.connection);
+						if (listeners.Contains(info.connectionInfo.listenSocket))
+						{
+							netServer.AcceptConnection(info.connection);
+							uint pollGroup = netServer.CreatePollGroup();
+							netServer.SetConnectionPollGroup(pollGroup, info.connection);
 
-						var conn = new ServerConnection();
-						conn.connection = info.connection;
-						conn.pollGroup = pollGroup;
+							var conn = new ServerConnection();
+							conn.connection = info.connection;
+							conn.pollGroup = pollGroup;
 
-						connections.Add(conn);
+							connections.Add(conn);
 
-						events.Add(new ConnectionConnectEvent(netServer, conn));
+							events.Add(new ConnectionConnectEvent(netServer, conn));
+						}
+						
 
 						break;
 
