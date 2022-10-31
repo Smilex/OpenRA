@@ -270,13 +270,13 @@ namespace OpenRA.Server
 
 							events.Add(new ConnectionConnectEvent(netServer, conn));
 						}
-						
+
 
 						break;
 
 					case Valve.Sockets.ConnectionState.Connected:
 						Console.WriteLine("Client connected - ID: " + info.connection + ", IP: " + info.connectionInfo.address.GetIP());
-						
+
 						break;
 
 					case Valve.Sockets.ConnectionState.ClosedByPeer:
@@ -309,11 +309,12 @@ namespace OpenRA.Server
 				address.SetAddress(endpoint.Address.ToString(), (ushort)endpoint.Port);
 
 				uint listenSocket = netServer.CreateListenSocket(ref address);
-				listeners.Add(listenSocket);
+				if (listenSocket != 0)
+					listeners.Add(listenSocket);
 			}
 
 			if (listeners.Count == 0)
-				throw new ArgumentOutOfRangeException();
+				throw new ArgumentOutOfRangeException("No valid endpoint provided.");
 
 			Type = type;
 			Settings = settings;
