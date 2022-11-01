@@ -96,6 +96,19 @@ Container@ADVANCED_PANEL:
 									Font: Tiny
 									WordWrap: True
 									Text: Your Operating System, OpenGL and .NET runtime versions, and language settings will be sent along with an anonymous ID to help prioritize future development.
+				Container@ROW:
+					Width: PARENT_RIGHT - 24
+					Height: 20
+					Children:
+						Container@NETSTATS_CHECKBOX_CONTAINER:
+							X: 10
+							Width: PARENT_RIGHT / 2 - 20
+							Children:
+								Checkbox@NETSTATS_CHECKBOX:
+									Width: PARENT_RIGHT
+									Height: 20
+									Font: Regular
+									Text: Show Network Stats
 				Container@SPACER:
 				Background@SECTION_HEADER:
 					X: 5
