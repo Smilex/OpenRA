@@ -21,9 +21,10 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 		[ObjectCreator.UseCtor]
 		public NetStatsDebugLogic(Widget widget, WorldRenderer worldRenderer)
 		{
-			var perfGraph = widget.Get("NETSTATS_BG");
-			perfGraph.IsVisible = () => Game.Settings.Debug.PerfGraph;
+			var netstats = widget.Get("NETSTATS_BG");
+			netstats.IsVisible = () => Game.Settings.Debug.NetStats;
 
+			/*
 			var perfText = widget.Get<LabelWidget>("NETSTATS_TEXT");
 			perfText.IsVisible = () => Game.Settings.Debug.PerfText;
 
@@ -49,6 +50,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 					$"Viewport Size: {viewportSize.Width} x {viewportSize.Height} / {Game.Renderer.WorldDownscaleFactor}\n" +
 					$"WFB Size: {wfbSize.Width} x {wfbSize.Height}";
 			};
+			*/
 		}
 	}
 }

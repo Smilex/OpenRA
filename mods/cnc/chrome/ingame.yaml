@@ -69,10 +69,35 @@ Container@PERF_WIDGETS:
 					Width: 200
 					Height: 200
 
+Container@NETSTATS_WIDGETS:
+	Logic: NetStatsDebugLogic
+	Children:
+		Label@NETSTATS_TEXT:
+			X: WINDOW_RIGHT - 200
+			Y: WINDOW_BOTTOM - 90
+			Width: 170
+			Height: 40
+			Contrast: true
+			VAlign: Top
+		Background@NETSTATS_BG:
+			Logic: AddFactionSuffixLogic
+			X: 5
+			Y: WINDOW_BOTTOM - HEIGHT - 156 - HEIGHT
+			Width: 220
+			Height: 220
+			Background: panel-black
+			Children:
+				NetStats@GRAPH:
+					X: 10
+					Y: 10
+					Width: 200
+					Height: 200
+
 Container@OBSERVER_WIDGETS:
-	Logic: MenuButtonsChromeLogic, LoadIngamePerfLogic, LoadIngameChatLogic
+	Logic: MenuButtonsChromeLogic, LoadIngamePerfLogic, LoadIngameChatLogic, LoadIngameNetStatsLogic
 	Children:
 		Container@CHAT_ROOT:
+		Container@NETSTATS_ROOT:
 		Container@PERF_ROOT:
 		ViewportController:
 			Width: WINDOW_RIGHT
@@ -1155,10 +1180,11 @@ Container@OBSERVER_WIDGETS:
 							AxisFont: TinyBold
 
 Container@PLAYER_WIDGETS:
-	Logic: LoadIngamePerfLogic, LoadIngameChatLogic
+	Logic: LoadIngamePerfLogic, LoadIngameChatLogic, LoadIngameNetStatsLogic
 	Children:
 		Container@CHAT_ROOT:
 		Container@PERF_ROOT:
+		Container@NETSTATS_ROOT:
 		ViewportController:
 			Width: WINDOW_RIGHT
 			Height: WINDOW_BOTTOM

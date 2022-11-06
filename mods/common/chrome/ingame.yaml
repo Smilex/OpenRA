@@ -23,7 +23,7 @@ Container@INGAME_ROOT:
 				SelectAllUnitsKey: SelectAllUnits
 				SelectUnitsByTypeKey: SelectUnitsByType
 		Container@WORLD_ROOT:
-			Logic: LoadIngamePerfLogic
+			Logic: LoadIngamePerfLogic, LoadIngameNetStatsLogic
 			Children:
 				LogicTicker@DISCONNECT_WATCHER:
 					Logic: DisconnectWatcherLogic
@@ -60,6 +60,7 @@ Container@INGAME_ROOT:
 					Y: 40
 				Container@PLAYER_ROOT:
 				Container@PERF_ROOT:
+				Container@NETSTATS_ROOT:
 		Container@MENU_ROOT:
 		TooltipContainer@TOOLTIP_CONTAINER:
 		MouseAttachment@MOUSE_ATTATCHMENT:

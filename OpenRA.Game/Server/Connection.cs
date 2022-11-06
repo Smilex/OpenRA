@@ -53,7 +53,7 @@ namespace OpenRA.Server
 			PlayerIndex = server.ChooseFreePlayerIndex();
 			AuthToken = authToken;
 			ConnectionInfo info = new ConnectionInfo();
-			netServer.GetConnectionInfo(conn.connection, ref info);
+			netServer.GetConnectionInfo(conn.Connection, ref info);
 			EndPoint = new Network.EndPoint(info.address);
 
 			netMessages = new NetworkingMessage[maxMessages];
@@ -90,8 +90,7 @@ namespace OpenRA.Server
 			{
 				while (true)
 				{
-
-					int netMessagesCount = netServer.ReceiveMessagesOnPollGroup(conn.pollGroup, netMessages, maxMessages);
+					int netMessagesCount = netServer.ReceiveMessagesOnPollGroup(conn.PollGroup, netMessages, maxMessages);
 					if (netMessagesCount > 0)
 					{
 						for (int i = 0; i < netMessagesCount; i++)
@@ -168,7 +167,7 @@ namespace OpenRA.Server
 					// Send all data immediately, we will block again on read
 					while (sendQueue.TryTake(out var data, 0))
 					{
-						netServer.SendMessageToConnection(conn.connection, data);
+						netServer.SendMessageToConnection(conn.Connection, data);
 					}
 
 					Thread.Sleep(15);

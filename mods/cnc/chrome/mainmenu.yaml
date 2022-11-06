@@ -266,27 +266,6 @@ Container@MENU_BACKGROUND:
 							Y: 10
 							Width: 200
 							Height: 200
-		Container@NETSTATS_INFO:
-			Logic: NetStatsDebugLogic
-			Children:
-				Label@NETSTATS_TEXT:
-					X: 25
-					Y: WINDOW_BOTTOM - HEIGHT - 100
-					Width: 170
-					Contrast: true
-					VAlign: Top
-				Background@NETSTATS_BG:
-					X: 31
-					Y: 31
-					Width: 220
-					Height: 220
-					Background: panel-black
-					Children:
-						NetStats@GRAPH:
-							X: 10
-							Y: 10
-							Width: 200
-							Height: 200
 		Container@PLAYER_PROFILE_CONTAINER:
 			X: 31
 			Y: 31

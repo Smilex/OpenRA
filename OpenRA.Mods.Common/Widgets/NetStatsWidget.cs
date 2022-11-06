@@ -34,33 +34,9 @@ namespace OpenRA.Mods.Common.Widgets
 
 			cr.DrawLine(origin + new float2(100, 0) * basis, origin + new float2(100, 100) * basis, 1, Color.White);
 
-			var k = 0;
-			foreach (var item in PerfHistory.Items.Values)
-			{
-				cr.DrawLine(item.Samples()
-					.Select((sample, i) => origin + new float3(i, (float)sample, 0) * basis),
-					1, item.C);
+			cr.DrawLine(NetStatsHistory.Pings.Select((ping, i) => origin + new float3(i, (float)ping, 0) * basis), 1, Color.Red);
 
-				var u = new float2(rect.Left, rect.Top);
-
-				cr.DrawLine(
-					u + new float2(10, 10 * k + 5),
-					u + new float2(12, 10 * k + 5),
-					1, item.C);
-				cr.DrawLine(
-					u + new float2(10, 10 * k + 4),
-					u + new float2(12, 10 * k + 4),
-					1, item.C);
-
-				++k;
-			}
-
-			k = 0;
-			foreach (var item in PerfHistory.Items.Values)
-			{
-				Game.Renderer.Fonts["Tiny"].DrawText(item.Name, new float2(rect.Left, rect.Top) + new float2(18, 10 * k - 3), Color.White);
-				++k;
-			}
+			Game.Renderer.Fonts["Tiny"].DrawText("Ping", new float2(rect.Left, rect.Top) + new float2(18, 0), Color.White);
 		}
 	}
 }

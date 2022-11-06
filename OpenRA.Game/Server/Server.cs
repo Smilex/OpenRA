@@ -45,8 +45,8 @@ namespace OpenRA.Server
 	}
 
 	public class ServerConnection {
-		public uint connection;
-		public uint pollGroup;
+		public uint Connection;
+		public uint PollGroup;
 	}
 
 	public sealed class Server
@@ -263,8 +263,8 @@ namespace OpenRA.Server
 							netServer.SetConnectionPollGroup(pollGroup, info.connection);
 
 							var conn = new ServerConnection();
-							conn.connection = info.connection;
-							conn.pollGroup = pollGroup;
+							conn.Connection = info.connection;
+							conn.PollGroup = pollGroup;
 
 							connections.Add(conn);
 
@@ -283,7 +283,7 @@ namespace OpenRA.Server
 					case Valve.Sockets.ConnectionState.ProblemDetectedLocally:
 						for (int i = 0; i < connections.Count; ++i)
 						{
-							if (connections[i].connection == info.connection)
+							if (connections[i].Connection == info.connection)
 							{
 								connections.Remove(connections[i]);
 								break;

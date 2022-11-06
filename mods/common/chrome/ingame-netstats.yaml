@@ -1,0 +1,22 @@
+Container@NETSTATS_WIDGETS:
+	Logic: NetStatsDebugLogic
+	Children:
+		Label@NETSTATS_TEXT:
+			X: WINDOW_RIGHT - 200
+			Y: WINDOW_BOTTOM - 69
+			Width: 170
+			Height: 40
+			Contrast: true
+		Background@NETSTATS_BG:
+			ClickThrough: true
+			Background: dialog4
+			X: 10
+			Y: WINDOW_BOTTOM - HEIGHT - 156 - HEIGHT
+			Width: 210
+			Height: 210
+			Children:
+				NetStats@GRAPH:
+					X: 5
+					Y: 5
+					Width: 200
+					Height: 200

@@ -17,6 +17,7 @@ using System.Linq;
 using System.Threading;
 using System.Net;
 using OpenRA.Server;
+using OpenRA.Support;
 using Valve.Sockets;
 using System.Runtime.InteropServices;
 
@@ -130,7 +131,6 @@ namespace OpenRA.Network
 		volatile int clientId;
 		bool disposed;
 		string errorMessage;
-		bool connected = false;
 
 		public NetworkConnection(ConnectionTarget target)
 		{
@@ -230,6 +230,11 @@ namespace OpenRA.Network
 				while (true)
 				{
 					client.RunCallbacks();
+
+					ConnectionStatus status = new ConnectionStatus();
+					client.GetQuickConnectionStatus(connection, ref status);
+					NetStatsHistory.Pings.Add(status.ping);
+
 					int netMessagesCount = client.ReceiveMessagesOnConnection(connection, netMessages, maxNetMessages);
 
 					if (netMessagesCount > 0)
@@ -447,7 +452,7 @@ namespace OpenRA.Network
 			// Closing the stream will cause any reads on the receiving thread to throw.
 			// This will mark the connection as no longer connected and the thread will terminate cleanly.
 			client.CloseConnection(connection);
-			
+
 
 			Recorder?.Dispose();
 		}
