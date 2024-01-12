@@ -14,10 +14,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Sockets;
+using System.Linq;
 using System.Threading;
+using System.Runtime.InteropServices;
+using Valve.Sockets;
 
 namespace OpenRA.Server
 {
@@ -44,17 +45,20 @@ namespace OpenRA.Server
 		readonly BlockingCollection<byte[]> sendQueue = new();
 		readonly Queue<int> pingHistory = new();
 
-		public Connection(Server server, Socket socket, string authToken)
+		public Connection(Server server, uint connection, string authToken)
 		{
 			PlayerIndex = server.ChooseFreePlayerIndex();
 			AuthToken = authToken;
-			EndPoint = socket.RemoteEndPoint;
+			var connectionInfo = new Valve.Sockets.ConnectionInfo();
+			server.networkingSockets.GetConnectionInfo(connection, ref connectionInfo);
+			var ipAddress = new IPAddress(connectionInfo.address.ip);
+			EndPoint = new IPEndPoint(ipAddress, connectionInfo.address.port);
 
 			new Thread(SendReceiveLoop)
 			{
 				Name = $"Client communication ({EndPoint}",
 				IsBackground = true
-			}.Start((server, socket));
+			}.Start((server, connection));
 		}
 
 		static byte[] CreatePingFrame()
@@ -70,79 +74,84 @@ namespace OpenRA.Server
 
 		void SendReceiveLoop(object s)
 		{
-			var (server, socket) = ((Server, Socket))s;
-			socket.Blocking = false;
-			socket.NoDelay = true;
+			var (server, connection) = ((Server, uint))s;
 
-			var receiveBuffer = new byte[1024];
 			var readBuffer = new List<byte>();
 			var state = ReceiveState.Header;
 			var expectLength = 8;
 			var frame = 0;
 			var lastPingSent = Stopwatch.StartNew();
 
-			try
-			{
+			try {
+				const int maxMessages = 20;
+
+				Valve.Sockets.NetworkingMessage[] netMessages = new Valve.Sockets.NetworkingMessage[maxMessages];
 				while (true)
 				{
-					// Wait up to 100ms for data to arrive before checking for data to send
-					if (socket.Poll(100000, SelectMode.SelectRead))
-					{
-						var read = socket.Receive(receiveBuffer);
-						if (read == 0)
-						{
-							// Empty packet signals that the client has been dropped
-							return;
-						}
+					Thread.Sleep(21);
+					
+					var info = new Valve.Sockets.ConnectionInfo();
+					server.networkingSockets.GetConnectionInfo(connection, ref info);
 
-						if (read > 0)
-						{
-							readBuffer.AddRange(receiveBuffer.Take(read));
-							lastReceivedTime = Game.RunTime;
-							TimeoutMessageShown = false;
-						}
+					int netMessagesCount = server.networkingSockets.ReceiveMessagesOnConnection(connection, netMessages, maxMessages);
 
-						while (readBuffer.Count >= expectLength)
-						{
-							var bytes = readBuffer.GetRange(0, expectLength).ToArray();
-							readBuffer.RemoveRange(0, expectLength);
+					if (netMessagesCount > 0) {
+						for (int i = 0; i < netMessagesCount; i++) {
+							ref Valve.Sockets.NetworkingMessage netMessage = ref netMessages[i];
 
-							switch (state)
+							Console.WriteLine("Message received from server - Channel ID: " + netMessage.channel + ", Data length: " + netMessage.length);
+
+							if (netMessage.length > 0) {
+								var bytes = new byte[netMessage.length];
+								Marshal.Copy(netMessage.data, bytes, 0, netMessage.length);
+								readBuffer.AddRange(bytes);
+								lastReceivedTime = Game.RunTime;
+								TimeoutMessageShown = false;
+							}
+							netMessage.Destroy();
+
+							while (readBuffer.Count >= expectLength)
 							{
-								case ReceiveState.Header:
-								{
-									expectLength = BitConverter.ToInt32(bytes, 0) - 4;
-									frame = BitConverter.ToInt32(bytes, 4);
-									state = ReceiveState.Data;
+								var bytes = readBuffer.GetRange(0, expectLength).ToArray();
+								readBuffer.RemoveRange(0, expectLength);
 
-									if (expectLength < 0 || (server.IsMultiplayer && expectLength > MaxOrderLength))
+								switch (state)
+								{
+									case ReceiveState.Header:
 									{
-										Log.Write("server", $"Closing socket connection to {EndPoint} because of excessive order length: {expectLength}");
-										return;
+										expectLength = BitConverter.ToInt32(bytes, 0) - 4;
+										frame = BitConverter.ToInt32(bytes, 4);
+										state = ReceiveState.Data;
+
+										if (expectLength < 0 || (server.IsMultiplayer && expectLength > MaxOrderLength))
+										{
+											Log.Write("server", $"Closing socket connection to {EndPoint} because of excessive order length: {expectLength}");
+											return;
+										}
+
+										break;
 									}
 
-									break;
-								}
-
-								case ReceiveState.Data:
-								{
-									// Ping packets are sent and processed internally within this thread to reduce
-									// server-introduced latencies from polling loops
-									if (expectLength == 10 && bytes[0] == (byte)OrderType.Ping)
+									case ReceiveState.Data:
 									{
-										if (pingHistory.Count == MaxPingSamples)
-											pingHistory.Dequeue();
+										// Ping packets are sent and processed internally within this thread to reduce
+										// server-introduced latencies from polling loops
+										if (expectLength == 10 && bytes[0] == (byte)OrderType.Ping)
+										{
+											if (pingHistory.Count == MaxPingSamples)
+												pingHistory.Dequeue();
 
-										pingHistory.Enqueue((int)(Game.RunTime - BitConverter.ToInt64(bytes, 1)));
-										server.OnConnectionPing(this, pingHistory.ToArray(), bytes[9]);
+											pingHistory.Enqueue((int)(Game.RunTime - BitConverter.ToInt64(bytes, 1)));
+											server.OnConnectionPing(this, pingHistory.ToArray(), bytes[9]);
+										}
+										else
+											server.OnConnectionPacket(this, frame, bytes);
+
+										expectLength = 8;
+										state = ReceiveState.Header;
+
+										break;
 									}
-									else
-										server.OnConnectionPacket(this, frame, bytes);
-
-									expectLength = 8;
-									state = ReceiveState.Header;
-
-									break;
 								}
 							}
 						}
@@ -159,37 +168,14 @@ namespace OpenRA.Server
 					// Send all data immediately, we will block again on read
 					while (sendQueue.TryTake(out var data, 0))
 					{
-						var start = 0;
 						var length = data.Length;
-
-						// Non-blocking sends are free to send only part of the data
-						while (start < length)
-						{
-							var sent = socket.Send(data, start, length - start, SocketFlags.None, out var error);
-							if (error == SocketError.WouldBlock)
-							{
-								Log.Write("server", $"Non-blocking send of {length - start} bytes failed. Falling back to blocking send.");
-								socket.Blocking = true;
-								sent = socket.Send(data, start, length - start, SocketFlags.None);
-								socket.Blocking = false;
-							}
-							else if (error != SocketError.Success)
-								throw new SocketException((int)error);
-
-							start += sent;
-						}
+						var result = server.networkingSockets.SendMessageToConnection(connection, data, Valve.Sockets.SendFlags.Reliable);
 					}
 				}
+			} catch (Exception ex) {
 			}
-			catch (SocketException e)
-			{
-				Log.Write("server", $"Closing socket connection to {EndPoint} because of socket error: {e}");
-			}
-			finally
-			{
-				server.OnConnectionDisconnect(this);
-				socket.Dispose();
-			}
+
+			server.OnConnectionDisconnect(this);
 		}
 
 		public bool TrySendData(byte[] data)
